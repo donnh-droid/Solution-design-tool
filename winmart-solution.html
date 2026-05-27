@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GIẢI PHÁP VẬN TẢI B2B: WINMART PHÚ THỌ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <style>
+        :root {
+            --primary: #F26522;
+            --secondary: #2E3192;
+            --text: #333;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            color: var(--text);
+            line-height: 1.6;
+            margin: 0;
+            padding: 40px 20px;
+            background: #f0f2f5;
+        }
+        .container {
+            background: white;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 50px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        }
+        header {
+            border-bottom: 3px solid var(--primary);
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: 800;
+        }
+        .logo .ghn { color: var(--primary); }
+        .logo .b2b { color: var(--secondary); }
+        
+        h1 { font-size: 28px; color: var(--secondary); margin-bottom: 20px; text-transform: uppercase; }
+        h2 { font-size: 20px; color: var(--primary); margin-top: 40px; border-bottom: 2px solid #f0f2f5; padding-bottom: 10px; }
+        
+        .main-img {
+            width: 100%;
+            border-radius: 8px;
+            margin: 20px 0;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: white;
+        }
+        th, td {
+            border: 1px solid #e2e8f0;
+            padding: 15px;
+            text-align: left;
+        }
+        th { background: #f8fafc; font-weight: 600; color: var(--secondary); }
+        
+        .mermaid {
+            display: flex;
+            justify-content: center;
+            margin: 30px 0;
+            padding: 20px;
+            background: #fafafa;
+            border-radius: 8px;
+            border: 1px solid #eee;
+            overflow-x: auto;
+        }
+        
+        .footer {
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            font-size: 14px;
+            color: #64748b;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .back-link:hover { text-decoration: underline; }
+        
+        @media (max-width: 600px) {
+            .container { padding: 20px; }
+            h1 { font-size: 22px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="back-link">← Quay lại Công cụ Giải pháp</a>
+        <header>
+            <div class="logo">
+                <span class="ghn">GHN</span> <span class="b2b">LOGISTICS B2B</span>
+            </div>
+            <div style="text-align: right; font-size: 14px; color: #666;">
+                Ngày lập: 10/05/2026<br>
+                Mã dự án: WM-PT-2026
+            </div>
+        </header>
+        
+        <h1>GIẢI PHÁP VẬN TẢI: DC PHÚ THỌ - WINMART</h1>
+        
+        <img src="assets/hero_image.png" class="main-img" alt="Minh họa vận hành GHN - Winmart Phú Thọ">
+        
+        <h2>1. TỔNG QUAN YÊU CẦU</h2>
+        <p>Giao hàng từ <strong>Kho DC Win Phúc Thọ (Xã Liên Minh, Huyện Thanh Ba, Phú Thọ)</strong> đến hệ thống siêu thị Winmart/Winmart+ trên toàn tỉnh Phú Thọ.</p>
+        <ul>
+            <li><strong>Sản lượng:</strong> 8 Tấn/ngày.</li>
+            <li><strong>SLA:</strong> Giao hàng trong vòng 1 ngày (24h).</li>
+            <li><strong>Mục tiêu:</strong> Tối ưu hóa lộ trình từ phía Bắc tỉnh, tận dụng mạng lưới Hub Việt Trì làm điểm trung chuyển cho các Zone phía Nam.</li>
+        </ul>
+        
+        <h2>2. PHÂN VÙNG VẬN HÀNH (ZONING)</h2>
+        <p>Với DC đặt tại <strong>Thanh Ba</strong>, trọng tâm vận hành sẽ dịch chuyển lên phía Bắc tỉnh:</p>
+        <table>
+            <thead>
+                <tr>
+                    <th>Vùng</th>
+                    <th>Địa bàn bao phủ</th>
+                    <th>Đặc điểm & Mô hình</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Zone 1 (Immediate)</strong></td>
+                    <td>Thanh Ba, Đoan Hùng, Hạ Hòa, TX. Phú Thọ</td>
+                    <td>Vùng lân cận DC, giao hàng trực tiếp từ DC bằng xe 1.25T Milk-run.</td>
+                </tr>
+                <tr>
+                    <td><strong>Zone 2 (Core)</strong></td>
+                    <td>Việt Trì, Phù Ninh, Lâm Thao</td>
+                    <td>Trung tâm kinh tế, cần linehaul từ DC về Hub Việt Trì, sau đó phân phối.</td>
+                </tr>
+                <tr>
+                    <td><strong>Zone 3 (West)</strong></td>
+                    <td>Cẩm Khê, Yên Lập, Tam Nông</td>
+                    <td>Chạy dọc tuyến QL32C, giao hàng xuyên tâm (Linehaul).</td>
+                </tr>
+                <tr>
+                    <td><strong>Zone 4 (South)</strong></td>
+                    <td>Thanh Sơn, Thanh Thủy, Tân Sơn</td>
+                    <td>Xa nhất, cần trung chuyển qua Hub hoặc Bưu cục node phía Nam.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2>3. SƠ ĐỒ LUỒNG CÔNG VIỆC (FLOWCHART)</h2>
+        <div class="mermaid">
+            graph TD
+                A[DC Win Phúc Thọ - Thanh Ba] -- "Xe 8T (Night Shift)" --> B{Hub Việt Trì / Phân loại tại DC}
+                
+                A -- "Zone 1: Giao trực tiếp" --> C1[Xe 1.25T Milk-run]
+                B -- "Zone 2: Tuyến trung tâm" --> C2[Xe 1.25T & 3.5T]
+                B -- "Zone 3,4: Tuyến phía Nam" --> D[Xe 3.5T Linehaul]
+                
+                C1 --> E1[Winmart+ Thanh Ba/Đoan Hùng/Hạ Hòa]
+                C2 --> E2[Winmart Việt Trì / Phù Ninh]
+                
+                D -- "Drop-off" --> F1[Bưu cục Thanh Sơn]
+                D -- "Drop-off" --> F2[Bưu cục Cẩm Khê]
+                
+                F1 --> G1[Winmart+ Thanh Sơn/Tân Sơn]
+                F2 --> G2[Winmart+ Cẩm Khê/Yên Lập]
+                
+                E1 & E2 & G1 & G2 --> H((Hoàn tất POD))
+        </div>
+
+        <h2>4. LỊCH TRÌNH VẬN HÀNH (SOP)</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Thời gian</th>
+                    <th>Hoạt động</th>
+                    <th>Ghi chú</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>18:00 - 21:00 (T-0)</strong></td>
+                    <td>Picking & Packing tại DC</td>
+                    <td>Winmart chuẩn bị hàng theo đơn.</td>
+                </tr>
+                <tr>
+                    <td><strong>21:00 - 23:00 (T-0)</strong></td>
+                    <td>Loading & Transport</td>
+                    <td>Xe 8 tấn GHN vận chuyển hàng về Hub.</td>
+                </tr>
+                <tr>
+                    <td><strong>23:00 - 03:00 (T+1)</strong></td>
+                    <td>Sorting & Cross-docking</td>
+                    <td>Chia hàng theo 4 Zone.</td>
+                </tr>
+                <tr>
+                    <td><strong>04:00 - 07:00 (T+1)</strong></td>
+                    <td>Linehaul đến Bưu cục</td>
+                    <td>Xe trung chuyển đưa hàng về các điểm node.</td>
+                </tr>
+                <tr>
+                    <td><strong>07:30 - 12:00 (T+1)</strong></td>
+                    <td>Wave 1 Delivery</td>
+                    <td>Giao hàng siêu thị lớn / trọng điểm.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2>5. CAM KẾT CHẤT LƯỢNG (KPI)</h2>
+        <ul>
+            <li>Tỷ lệ giao hàng đúng hạn (SLA): <strong>>98%</strong></li>
+            <li>Thời gian phản hồi thông tin: <strong><15 phút</strong></li>
+            <li>Tỷ lệ hư hỏng hàng hóa: <strong><0.05%</strong> (Đặc thù hàng siêu thị)</li>
+            <li>POD Accuracy: <strong>100%</strong> chứng từ trả về trong 24h.</li>
+        </ul>
+
+        <div class="footer">
+            <span>© 2026 Giao Hàng Nhanh - Solution Design Team</span>
+            <span>Bản quyền tài liệu thuộc về GHN B2B</span>
+        </div>
+    </div>
+
+    <script>
+        mermaid.initialize({ startOnLoad: true, theme: 'neutral' });
+    </script>
+</body>
+</html>

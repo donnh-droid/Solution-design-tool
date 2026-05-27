@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GHN B2B Solution Design | FTL & LTL</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <span class="ghn-text">GHN</span> <span class="b2b-tag">B2B LOGISTICS</span>
+            </div>
+            <h1>Thiết Kế Giải Pháp Giao Hàng Chuỗi Cung Ứng</h1>
+        </header>
+
+        <main>
+            <section class="input-panel card">
+                <h3><i class="icon">⚙️</i> Thông Số Yêu Cầu</h3>
+                <div class="grid-inputs">
+                    <div class="input-group">
+                        <label>Tên Khách Hàng</label>
+                        <input type="text" id="customerName" placeholder="VD: WinMart, Bach Hoa Xanh...">
+                    </div>
+                    <div class="input-group">
+                        <label>Loại Sản Phẩm</label>
+                        <select id="productType">
+                            <option value="fmcg">Hàng tiêu dùng (FMCG)</option>
+                            <option value="perishable">Thực phẩm tươi sống / Lạnh</option>
+                            <option value="electronics">Điện tử / Gia dụng</option>
+                            <option value="fashion">Thời trang / May mặc</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>Điểm Lấy Hàng</label>
+                        <input type="text" id="pickup" placeholder="VD: Kho Tổng (DC) Bình Dương">
+                    </div>
+                    <div class="input-group">
+                        <label>Điểm Giao Hàng</label>
+                        <input type="text" id="delivery" placeholder="VD: Chuỗi 50 siêu thị nội thành HCM">
+                    </div>
+                    <div class="input-group">
+                        <label>SLA (Giờ)</label>
+                        <input type="number" id="sla" value="24">
+                    </div>
+                    <div class="input-group">
+                        <label>Khối Lượng (Tấn/Ngày)</label>
+                        <input type="number" id="volume" value="5">
+                    </div>
+                </div>
+                <button id="generateBtn" class="primary-btn">Thiết Kế Giải Pháp Tối Ưu</button>
+            </section>
+
+            <div class="result-layout">
+                <section class="solution-details card">
+                    <h3><i class="icon">🚀</i> Đề Xuất Mô Hình: <span id="modelType">--</span></h3>
+                    <div id="solutionContent">
+                        <p class="placeholder">Vui lòng nhập thông số và nhấn nút để xem giải pháp...</p>
+                    </div>
+                    <div class="optimization-tags" id="tags"></div>
+                </section>
+
+                <section class="flow-chart card">
+                    <h3><i class="icon">📊</i> Luồng Vận Hành (Operational Flow)</h3>
+                    <div id="mermaidDiagram" class="mermaid">
+                        graph TD
+                        A[Khách hàng B2B] --> B{Phân loại Volume}
+                        B -- > C[Chưa có dữ liệu]
+                    </div>
+                </section>
+            </div>
+
+            <section class="network-utilization card">
+                <h3><i class="icon">🌐</i> Tận Dụng Mạng Lưới GHN (Network Assets)</h3>
+                <div class="asset-grid">
+                    <div class="asset-item">
+                        <span class="val">2,000+</span>
+                        <span class="lab">Xe tải Linehaul</span>
+                    </div>
+                    <div class="asset-item">
+                        <span class="val">1,000+</span>
+                        <span class="lab">Bưu cục (Last-mile Injection)</span>
+                    </div>
+                    <div class="asset-item">
+                        <span class="val">3</span>
+                        <span class="lab">Mega Hub (Auto-sorting)</span>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>
