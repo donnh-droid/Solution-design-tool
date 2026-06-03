@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GIẢI PHÁP VẬN TẢI B2B: WINMART PHÚ THỌ</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="auth.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mermaid@10.6.1/dist/mermaid.min.js"></script>
     <style>
         :root {
@@ -238,6 +239,12 @@
         </div>
     </div>
 
+    <script>
+        // Auth gate: redirect to login if not authenticated
+        if (!Auth.requireAuth()) {
+            document.body.style.display = 'none';
+        }
+    </script>
     <script>
         mermaid.initialize({ startOnLoad: true, theme: 'neutral' });
     </script>

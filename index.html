@@ -15,6 +15,7 @@
             <div class="logo">
                 <span class="ghn-text">GHN</span> <span class="b2b-tag">B2B LOGISTICS</span>
             </div>
+            <div id="userInfo"></div>
             <h1>Thiết Kế Giải Pháp Giao Hàng Chuỗi Cung Ứng</h1>
         </header>
 
@@ -93,6 +94,15 @@
             </section>
         </main>
     </div>
+    <script src="auth.js"></script>
+    <script>
+        // Auth gate: redirect to login if not authenticated
+        if (!Auth.requireAuth()) {
+            document.body.style.display = 'none';
+        } else {
+            Auth.renderUserInfo('userInfo');
+        }
+    </script>
     <script src="app.js"></script>
 </body>
 </html>

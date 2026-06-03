@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng Nhập | GHN B2B Solution Design</title>
+    <link rel="stylesheet" href="login.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="auth.js"></script>
+</head>
+<body>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+        <span class="loading-text">Đang xác thực...</span>
+    </div>
+
+    <!-- Error Toast -->
+    <div class="error-toast" id="errorToast">Đăng nhập thất bại. Vui lòng thử lại.</div>
+
+    <div class="login-container">
+        <div class="login-card">
+
+            <!-- Logo -->
+            <div class="login-logo">
+                <span class="ghn-text">GHN</span>
+                <span class="b2b-tag">B2B</span>
+            </div>
+
+            <!-- Title -->
+            <h1 class="login-title">Solution Design Tool</h1>
+            <p class="login-subtitle">Đăng nhập để truy cập công cụ thiết kế giải pháp giao hàng chuỗi cung ứng</p>
+
+            <!-- Divider -->
+            <div class="login-divider">
+                <span>Xác thực bằng</span>
+            </div>
+
+            <!-- Google Sign-In Button -->
+            <div class="google-btn-wrapper">
+                <div id="g_id_onload"
+                     data-client_id="YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com"
+                     data-context="signin"
+                     data-ux_mode="popup"
+                     data-callback="handleGoogleSignIn"
+                     data-auto_prompt="false">
+                </div>
+                <div class="g_id_signin"
+                     data-type="standard"
+                     data-shape="rectangular"
+                     data-theme="outline"
+                     data-text="signin_with"
+                     data-size="large"
+                     data-logo_alignment="left"
+                     data-width="360">
+                </div>
+            </div>
+
+            <!-- Security Badge -->
+            <div class="security-badge">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                </svg>
+                Bảo mật bởi Google OAuth 2.0
+            </div>
+
+            <!-- Footer -->
+            <div class="login-footer">
+                © 2026 Giao Hàng Nhanh — B2B Logistics
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // If already logged in, redirect to main page
+        (function() {
+            const user = Auth.getUser();
+            if (user && (!user.exp || Date.now() < user.exp)) {
+                window.location.href = 'index.html';
+            }
+        })();
+
+        /**
+         * Callback from Google Identity Services after successful sign-in.
+         * Decodes the JWT credential to extract user info.
+         */
+        function handleGoogleSignIn(response) {
+            const overlay = document.getElementById('loadingOverlay');
+            overlay.classList.add('active');
+
+            try {
+                // Decode the JWT payload (base64url -> JSON)
+                const payload = JSON.parse(
+                    atob(response.credential.split('.')[1].replace(/-/g, '+').replace(/_/g, '/'))
+                );
+
+                // Validate required fields
+                if (!payload.email || !payload.sub) {
+                    throw new Error('Invalid token payload');
+                }
+
+                // Save user session
+                Auth.saveUser({
+                    name: payload.name || payload.email,
+                    email: payload.email,
+                    picture: payload.picture || '',
+                    exp: (payload.exp * 1000) // Convert UNIX timestamp to ms
+                });
+
+                // Redirect to main app
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 600);
+
+            } catch (err) {
+                overlay.classList.remove('active');
+                showError('Đăng nhập thất bại: ' + (err.message || 'Lỗi không xác định'));
+            }
+        }
+
+        function showError(msg) {
+            const toast = document.getElementById('errorToast');
+            toast.textContent = msg;
+            toast.classList.add('visible');
+            setTimeout(() => toast.classList.remove('visible'), 4000);
+        }
+    </script>
+</body>
+</html>
