@@ -9,8 +9,15 @@ document.addEventListener('DOMContentLoaded', function() {
         const productType = document.getElementById('productType').value;
         const pickup = document.getElementById('pickup').value || "DC Win Phúc Thọ (Thanh Ba)";
         const delivery = document.getElementById('delivery').value || "Chuỗi Cửa Hàng Phú Thọ";
-        const sla = parseInt(document.getElementById('sla').value);
-        const volume = parseFloat(document.getElementById('volume').value);
+        const slaVal = parseInt(document.getElementById('sla').value, 10);
+        const sla = isNaN(slaVal) ? 24 : slaVal;
+        const volumeVal = parseFloat(document.getElementById('volume').value);
+        const volume = isNaN(volumeVal) ? 5 : volumeVal;
+
+        // Function to strip dangerous characters for Mermaid
+        const escapeMermaid = (str) => String(str).replace(/["><\]\[\\-]/g, '').trim();
+        const safePickupMermaid = escapeMermaid(pickup);
+        const safeDeliveryMermaid = escapeMermaid(delivery);
 
         let modelType = "";
         let solutionText = "";
@@ -42,11 +49,21 @@ document.addEventListener('DOMContentLoaded', function() {
             fashion: "Hàng cồng kềnh, ưu tiên xe thùng kín và hệ thống phân loại theo SKU/Size."
         };
 
+        // Escape user input for safe HTML embedding
+        const escapeHtml = (str) => {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        };
+        const safeCustomerName = escapeHtml(customerName);
+        const safePickup = escapeHtml(pickup);
+        const safeDelivery = escapeHtml(delivery);
+
         if (partnerData) {
             modelType = `Giải Pháp Chiến Lược cho ${customerName}`;
             solutionText = `
                 <div class="partner-alert">
-                    <strong>Hệ thống nhận diện Đối tác chiến lược:</strong> Đã tìm thấy cấu trúc mạng lưới của ${customerName}.
+                    <strong>Hệ thống nhận diện Đối tác chiến lược:</strong> Đã tìm thấy cấu trúc mạng lưới của ${safeCustomerName}.
                 </div>
                 <p><strong>Chiến lược đề xuất:</strong> ${partnerData.strategy}</p>
                 <p>${partnerData.advice}</p>
@@ -63,9 +80,9 @@ document.addEventListener('DOMContentLoaded', function() {
             `;
             mermaidCode = `
                 graph LR
-                DC["${pickup}"] -- "Milk Run Route" --> S1["${partnerData.stores[0]}"]
-                S1 --> S2["${partnerData.stores[1]}"]
-                S2 --> S3["${partnerData.stores[2]}"]
+                DC["${safePickupMermaid}"] -- "Milk Run Route" --> S1["${escapeMermaid(partnerData.stores[0])}"]
+                S1 --> S2["${escapeMermaid(partnerData.stores[1])}"]
+                S2 --> S3["${escapeMermaid(partnerData.stores[2])}"]
                 S3 --> S4["..."]
                 style DC fill:#f9f,stroke:#333
                 classDef store fill:#fff,stroke:#F26522,stroke-width:2px;
@@ -75,7 +92,7 @@ document.addEventListener('DOMContentLoaded', function() {
         } else if (volume >= 3) {
             modelType = `LTL cho ${customerName}`;
             solutionText = `
-                <p><strong>Phân tích cho ${customerName}:</strong> Với ngành hàng ${productType.toUpperCase()}, ${productAdvice[productType]}</p>
+                <p><strong>Phân tích cho ${safeCustomerName}:</strong> Với ngành hàng ${productType.toUpperCase()}, ${productAdvice[productType]}</p>
                 <p>Chúng tôi sẽ kết hợp hàng hóa của bạn vào luồng vận tải trục của GHN.</p>
                 <ul>
                     <li><strong>Mô hình:</strong> Hàng được gom tại các Bưu cục (Post Office) gần nhất hoặc lấy tại kho và đưa về Mega Hub.</li>
@@ -85,21 +102,23 @@ document.addEventListener('DOMContentLoaded', function() {
             `;
             mermaidCode = `
                 graph TD
-                P["${pickup}"] --> H1["GHN Mega Hub (Gom hàng)"]
+                P["${safePickupMermaid}"] --> H1["GHN Mega Hub (Gom hàng)"]
                 H1 -- "Linehaul (Trục chính)" --> H2["GHN Hub (Phân phối)"]
-                H2 --> D["${delivery}"]
+                H2 --> D["${safeDeliveryMermaid}"]
                 style H1 fill:#F26522,color:#fff
                 style H2 fill:#F26522,color:#fff
             `;
             tags = ["Cross-docking", "Linehaul Sharing", "Auto-Sorting"];
         }
 
-        // Update UI
+        // Update UI with DOMPurify (fail closed if unavailable)
         document.getElementById('modelType').innerText = modelType;
-        document.getElementById('solutionContent').innerHTML = solutionText;
+        const cleanSolutionText = typeof DOMPurify !== 'undefined' ? DOMPurify.sanitize(solutionText) : '';
+        document.getElementById('solutionContent').innerHTML = cleanSolutionText;
         
         const tagsContainer = document.getElementById('tags');
-        tagsContainer.innerHTML = tags.map(t => `<span class="tag highlight">${t}</span>`).join('');
+        const cleanTags = tags.map(t => `<span class="tag highlight">${typeof DOMPurify !== 'undefined' ? DOMPurify.sanitize(t) : escapeHtml(t)}</span>`).join('');
+        tagsContainer.innerHTML = cleanTags;
 
         // Update Mermaid
         const mermaidDiv = document.getElementById('mermaidDiagram');

@@ -6,7 +6,8 @@
     <title>GHN B2B Solution Design | FTL & LTL</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.6.1/dist/mermaid.min.js"></script>
 </head>
 <body>
     <div class="container">
@@ -23,7 +24,7 @@
                 <div class="grid-inputs">
                     <div class="input-group">
                         <label>Tên Khách Hàng</label>
-                        <input type="text" id="customerName" placeholder="VD: WinMart, Bach Hoa Xanh...">
+                        <input type="text" id="customerName" placeholder="VD: WinMart, Bach Hoa Xanh..." maxlength="200">
                     </div>
                     <div class="input-group">
                         <label>Loại Sản Phẩm</label>
@@ -36,11 +37,11 @@
                     </div>
                     <div class="input-group">
                         <label>Điểm Lấy Hàng</label>
-                        <input type="text" id="pickup" placeholder="VD: Kho Tổng (DC) Bình Dương">
+                        <input type="text" id="pickup" placeholder="VD: Kho Tổng (DC) Bình Dương" maxlength="200">
                     </div>
                     <div class="input-group">
                         <label>Điểm Giao Hàng</label>
-                        <input type="text" id="delivery" placeholder="VD: Chuỗi 50 siêu thị nội thành HCM">
+                        <input type="text" id="delivery" placeholder="VD: Chuỗi 50 siêu thị nội thành HCM" maxlength="200">
                     </div>
                     <div class="input-group">
                         <label>SLA (Giờ)</label>

@@ -128,11 +128,21 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // --- Persistence & State Management ---
+    let savedTasks;
+    try {
+        savedTasks = JSON.parse(localStorage.getItem('ops-tasks'));
+        if (!Array.isArray(savedTasks) || savedTasks.length !== 4) {
+            savedTasks = [false, false, false, false];
+        }
+    } catch (e) {
+        savedTasks = [false, false, false, false];
+    }
+
     const state = {
-        backlog: localStorage.getItem('ops-backlog') || 1248,
-        gtc: localStorage.getItem('ops-gtc') || 94.5,
-        firstDay: localStorage.getItem('ops-first-day') || 82.3,
-        tasks: JSON.parse(localStorage.getItem('ops-tasks')) || [false, false, false, false]
+        backlog: parseInt(localStorage.getItem('ops-backlog'), 10) || 1248,
+        gtc: parseFloat(localStorage.getItem('ops-gtc')) || 94.5,
+        firstDay: parseFloat(localStorage.getItem('ops-first-day')) || 82.3,
+        tasks: savedTasks
     };
 
     function updateUI() {
@@ -214,9 +224,9 @@ function animateValue(obj, start, end, duration, suffix) {
         const value = progress * (end - start) + start;
         
         if (suffix === '%') {
-            obj.innerHTML = value.toFixed(1) + suffix;
+            obj.textContent = value.toFixed(1) + suffix;
         } else {
-            obj.innerHTML = Math.floor(value).toLocaleString();
+            obj.textContent = Math.floor(value).toLocaleString();
         }
         
         if (progress < 1) {
