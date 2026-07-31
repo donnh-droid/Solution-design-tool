@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GHN B2B — Gia Lai & Kon Tum GXT Expansion Plan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+/* ════════════════════════════════════════════════════════════════
+   CSS CUSTOM PROPERTIES
+   ════════════════════════════════════════════════════════════════ */
+:root {
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-tertiary: #334155;
+  --bg-glass: rgba(15, 23, 42, 0.85);
+  --bg-glass-light: rgba(30, 41, 59, 0.75);
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --ghn-orange: #F26522;
+  --ghn-orange-light: #FB923C;
+  --ghn-orange-dark: #EA580C;
+  --vt-blue: #3B82F6;
+  --vt-blue-light: #60A5FA;
+  --vt-blue-dark: #1D4ED8;
+  --border-color: rgba(148, 163, 184, 0.15);
+  --border-glow: rgba(242, 101, 34, 0.3);
+  --success: #22c55e;
+  --warning: #eab308;
+  --danger: #ef4444;
+  --sidebar-width: 420px;
+  --radius: 12px;
+  --radius-sm: 8px;
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ════════════════════════════════════════════════════════════════
+   RESET & BASE
+   ════════════════════════════════════════════════════════════════ */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { height: 100%; overflow: hidden; }
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ════════════════════════════════════════════════════════════════
+   MAP
+   ════════════════════════════════════════════════════════════════ */
+#map {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: 1;
+}
+.leaflet-control-attribution { display: none !important; }
+.leaflet-control-zoom {
+  border: none !important;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4) !important;
+}
+.leaflet-control-zoom a {
+  background: var(--bg-glass) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-color) !important;
+  backdrop-filter: blur(12px);
+  width: 36px !important; height: 36px !important;
+  line-height: 36px !important; font-size: 16px !important;
+}
+.leaflet-control-zoom a:hover {
+  background: var(--bg-secondary) !important;
+  color: var(--ghn-orange) !important;
+}
+
+/* ════════════════════════════════════════════════════════════════
+   SIDEBAR
+   ════════════════════════════════════════════════════════════════ */
+#sidebar {
+  position: fixed;
+  top: 0; left: 0;
+  width: var(--sidebar-width);
+  height: 100vh;
+  background: var(--bg-glass);
+  backdrop-filter: blur(20px) saturate(1.8);
+  -webkit-backdrop-filter: blur(20px) saturate(1.8);
+  border-right: 1px solid var(--border-color);
+  z-index: 1000;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+#sidebar.collapsed { transform: translateX(calc(-1 * var(--sidebar-width))); }
+
+#sidebar-toggle {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  z-index: 1001;
+  width: 44px; height: 44px;
+  border-radius: var(--radius);
+  background: var(--bg-glass);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+  font-size: 20px;
+}
+#sidebar-toggle:hover {
+  background: var(--ghn-orange);
+  border-color: var(--ghn-orange);
+  box-shadow: 0 0 20px rgba(242, 101, 34, 0.4);
+}
+#sidebar.collapsed ~ #sidebar-toggle { left: 16px; }
+#sidebar:not(.collapsed) ~ #sidebar-toggle { left: calc(var(--sidebar-width) + 16px); }
+
+/* Sidebar Header */
+.sidebar-header {
+  padding: 24px 20px 16px;
+  border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+.sidebar-header .brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+.sidebar-header .brand-icon {
+  width: 36px; height: 36px;
+  background: linear-gradient(135deg, var(--ghn-orange), var(--ghn-orange-dark));
+  border-radius: var(--radius-sm);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 900; font-size: 14px; color: white;
+  box-shadow: 0 2px 10px rgba(242, 101, 34, 0.4);
+}
+.sidebar-header h1 {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  color: var(--text-primary);
+}
+.sidebar-header .subtitle {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+/* Sidebar Content */
+.sidebar-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 20px 80px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--bg-tertiary) transparent;
+}
+.sidebar-content::-webkit-scrollbar { width: 5px; }
+.sidebar-content::-webkit-scrollbar-track { background: transparent; }
+.sidebar-content::-webkit-scrollbar-thumb { background: var(--bg-tertiary); border-radius: 4px; }
+
+/* Section */
+.section {
+  margin-bottom: 20px;
+}
+.section-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ghn-orange);
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.section-title::before {
+  content: '';
+  width: 3px; height: 14px;
+  background: var(--ghn-orange);
+  border-radius: 2px;
+}
+
+/* Tables */
+.data-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 12px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+}
+.data-table th {
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 10px;
+  letter-spacing: 0.8px;
+  padding: 10px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-color);
+}
+.data-table td {
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+.data-table tr:last-child td { border-bottom: none; }
+.data-table tr:hover td { background: rgba(242, 101, 34, 0.05); }
+.data-table .highlight { color: var(--ghn-orange); font-weight: 700; }
+.data-table .blue { color: var(--vt-blue); font-weight: 600; }
+.data-table .total-row td {
+  background: rgba(242, 101, 34, 0.1);
+  font-weight: 700;
+  color: var(--ghn-orange);
+  border-top: 2px solid var(--ghn-orange);
+}
+
+/* Cost Cards */
+.cost-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.cost-card {
+  background: var(--bg-glass-light);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+  transition: var(--transition);
+}
+.cost-card:hover {
+  border-color: var(--border-glow);
+  box-shadow: 0 0 15px rgba(242, 101, 34, 0.1);
+}
+.cost-card.blue { border-top: 3px solid var(--vt-blue); }
+.cost-card.orange { border-top: 3px solid var(--ghn-orange); }
+.cost-card h4 {
+  font-size: 11px;
+  font-weight: 700;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.cost-card.blue h4 { color: var(--vt-blue-light); }
+.cost-card.orange h4 { color: var(--ghn-orange-light); }
+.cost-card .cost-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+.cost-card .cost-item .amount {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+.cost-card .cost-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0 0;
+  margin-top: 8px;
+  border-top: 1px dashed var(--border-color);
+  font-size: 12px;
+  font-weight: 800;
+}
+.cost-card.blue .cost-total { color: var(--vt-blue-light); }
+.cost-card.orange .cost-total { color: var(--ghn-orange); }
+
+/* Status badges */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+.badge-blue { background: rgba(59, 130, 246, 0.15); color: var(--vt-blue-light); }
+.badge-orange { background: rgba(242, 101, 34, 0.15); color: var(--ghn-orange-light); }
+.badge-green { background: rgba(34, 197, 94, 0.15); color: var(--success); }
+.badge-new { background: rgba(242, 101, 34, 0.2); color: var(--ghn-orange); border: 1px solid rgba(242, 101, 34, 0.3); }
+
+/* Break-even Stats */
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.stat-card {
+  background: var(--bg-glass-light);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  text-align: center;
+}
+.stat-card .stat-value {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--ghn-orange);
+  line-height: 1.2;
+  margin-bottom: 4px;
+}
+.stat-card .stat-value.blue { color: var(--vt-blue-light); }
+.stat-card .stat-label {
+  font-size: 10px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.stat-card.full { grid-column: 1 / -1; }
+
+/* Vehicle Schedule */
+.vehicle-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.vehicle-row {
+  background: var(--bg-glass-light);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: var(--transition);
+  position: relative;
+}
+.vehicle-row:hover {
+  border-color: var(--border-glow);
+  background: rgba(30, 41, 59, 0.9);
+}
+.vehicle-row.active {
+  border-color: var(--ghn-orange);
+  box-shadow: 0 0 12px rgba(242, 101, 34, 0.2);
+}
+.vehicle-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.vehicle-name {
+  font-size: 12px;
+  font-weight: 700;
+  min-width: 42px;
+}
+.vehicle-trips {
+  display: flex;
+  gap: 4px;
+  flex: 1;
+}
+.trip-chip {
+  font-size: 9px;
+  padding: 3px 6px;
+  border-radius: 4px;
+  background: rgba(100, 116, 139, 0.2);
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+/* ════════════════════════════════════════════════════════════════
+   LEGEND
+   ════════════════════════════════════════════════════════════════ */
+#legend {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1000;
+  background: var(--bg-glass);
+  backdrop-filter: blur(20px) saturate(1.8);
+  -webkit-backdrop-filter: blur(20px) saturate(1.8);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  min-width: 220px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+}
+#legend h3 {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ghn-orange);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 12px;
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 0;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+.legend-icon {
+  width: 22px; height: 22px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.legend-circle {
+  width: 12px; height: 12px;
+  border-radius: 50%;
+}
+.legend-warehouse {
+  width: 18px; height: 18px;
+  border-radius: 4px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; color: white; font-weight: 800;
+}
+.legend-line {
+  width: 22px; height: 2px;
+  position: relative;
+}
+.legend-line.dashed {
+  background: none;
+  border-top: 2px dashed var(--text-secondary);
+}
+.legend-line.solid {
+  background: var(--text-secondary);
+}
+.legend-line.dotted {
+  background: none;
+  border-top: 2px dotted var(--text-secondary);
+}
+.legend-radius {
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  border: 2px solid;
+  opacity: 0.6;
+}
+.legend-divider {
+  height: 1px;
+  background: var(--border-color);
+  margin: 8px 0;
+}
+
+/* ════════════════════════════════════════════════════════════════
+   CUSTOM MAP POPUPS
+   ════════════════════════════════════════════════════════════════ */
+.leaflet-popup-content-wrapper {
+  background: var(--bg-glass) !important;
+  backdrop-filter: blur(16px) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: var(--radius-sm) !important;
+  color: var(--text-primary) !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4) !important;
+  padding: 0 !important;
+}
+.leaflet-popup-content {
+  margin: 0 !important;
+  font-family: 'Inter', sans-serif !important;
+  font-size: 12px !important;
+  line-height: 1.5 !important;
+}
+.leaflet-popup-tip {
+  background: var(--bg-glass) !important;
+  border: 1px solid var(--border-color) !important;
+  box-shadow: none !important;
+}
+.popup-content {
+  padding: 14px 16px;
+}
+.popup-content h4 {
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border-color);
+}
+.popup-content h4.blue { color: var(--vt-blue-light); }
+.popup-content h4.orange { color: var(--ghn-orange); }
+.popup-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 3px 0;
+  font-size: 11px;
+}
+.popup-row .label { color: var(--text-muted); }
+.popup-row .value { font-weight: 600; color: var(--text-primary); }
+
+/* ════════════════════════════════════════════════════════════════
+   LEAFLET MARKER OVERRIDES
+   ════════════════════════════════════════════════════════════════ */
+.gxt-marker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 3px solid white;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.4), 0 0 20px rgba(0,0,0,0.2);
+  font-weight: 900;
+  font-size: 14px;
+  color: white;
+  font-family: 'Inter', sans-serif;
+  transition: transform 0.2s;
+}
+.gxt-marker:hover { transform: scale(1.15); }
+
+/* ════════════════════════════════════════════════════════════════
+   RESPONSIVE
+   ════════════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  :root { --sidebar-width: 100vw; }
+  #legend { bottom: 12px; right: 12px; min-width: 180px; padding: 12px 14px; }
+  .cost-cards { grid-template-columns: 1fr; }
+  .stats-grid { grid-template-columns: 1fr; }
+}
+
+/* ════════════════════════════════════════════════════════════════
+   ANIMATIONS
+   ════════════════════════════════════════════════════════════════ */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+.animate-in { animation: fadeInUp 0.5s ease forwards; }
+.section { animation: fadeInUp 0.5s ease forwards; }
+.section:nth-child(1) { animation-delay: 0.1s; }
+.section:nth-child(2) { animation-delay: 0.2s; }
+.section:nth-child(3) { animation-delay: 0.3s; }
+.section:nth-child(4) { animation-delay: 0.4s; }
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════════════════════
+     MAP CONTAINER
+     ════════════════════════════════════════════════════════════════ -->
+<div id="map"></div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     SIDEBAR TOGGLE BUTTON
+     ════════════════════════════════════════════════════════════════ -->
+<button id="sidebar-toggle" onclick="toggleSidebar()" title="Toggle sidebar">☰</button>
+
+<!-- ════════════════════════════════════════════════════════════════
+     LEFT SIDEBAR — COST BREAKDOWN
+     ════════════════════════════════════════════════════════════════ -->
+<div id="sidebar">
+  <!-- Header -->
+  <div class="sidebar-header">
+    <div class="brand">
+      <div class="brand-icon">GHN</div>
+      <div>
+        <h1>GHN B2B — Phú Thọ</h1>
+        <div class="subtitle">GXT Expansion Plan 2026</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scrollable Content -->
+  <div class="sidebar-content">
+
+    <!-- Section 1: GXT Summary -->
+    <div class="section">
+      <div class="section-title">GXT Summary</div>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>GXT</th>
+            <th>Stores</th>
+            <th>Vehicles</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="blue">Việt Trì</td>
+            <td>62</td>
+            <td>4</td>
+            <td><span class="badge badge-blue">Hiện hữu</span></td>
+          </tr>
+          <tr>
+            <td class="highlight">Phú Thọ</td>
+            <td>58</td>
+            <td>4</td>
+            <td><span class="badge badge-new">🆕 Mở mới</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Section 2: Monthly Cost Breakdown -->
+    <div class="section">
+      <div class="section-title">Monthly Cost (1T9/GXT/day)</div>
+      <div class="cost-cards">
+        <!-- GXT Việt Trì -->
+        <div class="cost-card blue">
+          <h4>🔵 Việt Trì</h4>
+          <div class="cost-item"><span>Kho</span><span class="amount">0đ</span></div>
+          <div class="cost-item"><span>Nhân sự (2)</span><span class="amount">12.0M</span></div>
+          <div class="cost-item"><span>Linehaul (26)</span><span class="amount">44.2M</span></div>
+          <div class="cost-item"><span>Bốc xếp</span><span class="amount">19.76M</span></div>
+          <div class="cost-item"><span>Last-mile (4)</span><span class="amount">114.4M</span></div>
+          <div class="cost-total"><span>TỔNG</span><span>190.36M</span></div>
+        </div>
+        <!-- GXT Phú Thọ -->
+        <div class="cost-card orange">
+          <h4>🟠 Phú Thọ</h4>
+          <div class="cost-item"><span>Kho 200-300m²</span><span class="amount">15.0M</span></div>
+          <div class="cost-item"><span>Nhân sự (2)</span><span class="amount">12.0M</span></div>
+          <div class="cost-item"><span>Linehaul</span><span class="amount">44.2M</span></div>
+          <div class="cost-item"><span>Bốc xếp</span><span class="amount">19.76M</span></div>
+          <div class="cost-item"><span>Last-mile (4)</span><span class="amount">114.4M</span></div>
+          <div class="cost-item"><span>Misc</span><span class="amount">2.0M</span></div>
+          <div class="cost-total"><span>TỔNG</span><span>207.36M</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 3: Break-even Analysis -->
+    <div class="section">
+      <div class="section-title">Break-even Analysis</div>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-value">57.2M</div>
+          <div class="stat-label">Revenue/month</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">108.5M</div>
+          <div class="stat-label">Total Cost (Standalone)</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value blue">84.99M</div>
+          <div class="stat-label">B2B 20% Share Cost</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">16,345</div>
+          <div class="stat-label">Break-even (pcs/day)</div>
+        </div>
+        <div class="stat-card full">
+          <div class="stat-value" style="font-size:24px;">297đ<span style="font-size:12px;color:var(--text-muted);font-weight:400;">/piece</span></div>
+          <div class="stat-label">Break-even Price</div>
+        </div>
+      </div>
+      <div style="margin-top:10px; padding:10px 12px; background:rgba(242,101,34,0.08); border-radius:var(--radius-sm); border:1px solid rgba(242,101,34,0.15);">
+        <div style="font-size:10px;color:var(--text-muted);margin-bottom:4px;">FORMULA</div>
+        <div style="font-size:11px;color:var(--text-secondary);">11,000 pcs × 26 ngày × 200đ = <span style="color:var(--ghn-orange);font-weight:700;">57,200,000đ</span>/tháng</div>
+      </div>
+    </div>
+
+    <!-- Section 4: Vehicle Schedule -->
+    <div class="section">
+      <div class="section-title">Vehicle Schedule (8 vehicles)</div>
+      <div class="vehicle-grid" id="vehicle-grid">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     LEGEND (Bottom-Right)
+     ════════════════════════════════════════════════════════════════ -->
+<div id="legend">
+  <h3>Legend</h3>
+  <div class="legend-item">
+    <div class="legend-icon"><div class="legend-circle" style="background:var(--vt-blue);"></div></div>
+    <span>GXT Việt Trì stores</span>
+  </div>
+  <div class="legend-item">
+    <div class="legend-icon"><div class="legend-circle" style="background:var(--ghn-orange);"></div></div>
+    <span>GXT Phú Thọ stores</span>
+  </div>
+  <div class="legend-divider"></div>
+  <div class="legend-item">
+    <div class="legend-icon"><div class="legend-warehouse" style="background:var(--vt-blue);">W</div></div>
+    <span>GXT Việt Trì (Hiện hữu)</span>
+  </div>
+  <div class="legend-item">
+    <div class="legend-icon"><div class="legend-warehouse" style="background:var(--ghn-orange);">W</div></div>
+    <span>GXT Phú Thọ (Mở mới)</span>
+  </div>
+  <div class="legend-divider"></div>
+  <div class="legend-item">
+    <div class="legend-icon"><div class="legend-line dashed"></div></div>
+    <span>Trip 1</span>
+  </div>
+  <div class="legend-item">
+    <div class="legend-icon"><div class="legend-line solid"></div></div>
+    <span>Trip 2</span>
+  </div>
+  <div class="legend-item">
+    <div class="legend-icon"><div class="legend-line dotted"></div></div>
+    <span>Trip 3</span>
+  </div>
+  <div class="legend-divider"></div>
+  <div class="legend-item">
+    <div class="legend-icon"><div class="legend-radius" style="border-color:var(--vt-blue);background:rgba(59,130,246,0.1);"></div></div>
+    <span>30km Việt Trì</span>
+  </div>
+  <div class="legend-item">
+    <div class="legend-icon"><div class="legend-radius" style="border-color:var(--ghn-orange);background:rgba(242,101,34,0.1);"></div></div>
+    <span>30km Phú Thọ</span>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     JAVASCRIPT
+     ════════════════════════════════════════════════════════════════ -->
+<script>
+// ── STORE DATA ──────────────────────────────────────────────────
+const stores = [
+  {id:1, name:"Trần Hưng Đạo, Krông", lat:13.195687, lng:108.687376, dist:0, zone:""},
+  {id:2, name:"Hùng Vương, Phú Túc", lat:13.200258, lng:108.6850019, dist:0, zone:""},
+  {id:3, name:"42 Nguyễn Huệ, Đoàn ", lat:13.404473, lng:108.441308, dist:0, zone:""},
+  {id:4, name:"463 - 465 Trần Hưng ", lat:13.423813, lng:108.427511, dist:0, zone:""},
+  {id:5, name:"Ia Mrơn, Ia Pa", lat:13.477061, lng:108.445999, dist:0, zone:""},
+  {id:6, name:"511 Quang Trung", lat:13.972467, lng:108.674968, dist:0, zone:""},
+  {id:7, name:"1107 - 1109 Quang Tr", lat:13.95322, lng:108.663179, dist:0, zone:""},
+  {id:8, name:"Tổ dân phố 2, Xã Đak", lat:13.9735084, lng:108.5547693, dist:0, zone:""},
+  {id:9, name:"Lô 01 Nguyễn Huệ, Kô", lat:13.777113, lng:108.524514, dist:0, zone:""},
+  {id:10, name:"435 Hùng Vương, Phú ", lat:13.529749, lng:108.313241, dist:0, zone:""},
+  {id:11, name:"Thôn Mook Đen 2, Ia ", lat:13.7758662, lng:107.5951004, dist:0, zone:""},
+  {id:12, name:"380 Quang Trung", lat:13.800066, lng:107.693685, dist:0, zone:""},
+  {id:13, name:"Thôn Hợp Hòa, Ia Dra", lat:13.7440625, lng:107.8545981, dist:0, zone:""},
+  {id:14, name:"160 Hùng Vương", lat:13.758461, lng:107.887312, dist:0, zone:""},
+  {id:15, name:"760A Hùng Vương", lat:13.6980738, lng:108.0750713, dist:0, zone:""},
+  {id:16, name:"176 Hùng Vương", lat:13.546772, lng:108.099509, dist:0, zone:""},
+  {id:17, name:"904B Hùng Vương", lat:13.692571, lng:108.07775, dist:0, zone:""},
+  {id:18, name:"Trường Chinh, Xã Gào", lat:13.9247769, lng:108.00576, dist:0, zone:""},
+  {id:19, name:"339 Trường Chinh", lat:13.9538, lng:108.014, dist:0, zone:""},
+  {id:20, name:"02 Nơ Trang Long", lat:13.963458, lng:108.017286, dist:0, zone:""},
+  {id:21, name:"Tổ Dân Phố 2, Ia Ly", lat:14.2063268, lng:107.8372817, dist:0, zone:""},
+  {id:22, name:"Thôn 7, Biển Hồ", lat:14.0786747, lng:107.9886837, dist:0, zone:""},
+  {id:23, name:"Tổ 06, Trường Sơn", lat:14.037656562821, lng:107.975695569185, dist:0, zone:""},
+  {id:24, name:"04 Trường Sơn, TP Pl", lat:14.0303678512573, lng:107.986953735352, dist:0, zone:""},
+  {id:25, name:"324 Tôn Đức Thắng", lat:14.034856, lng:108.010484, dist:0, zone:""},
+  {id:26, name:"256 Trần Hưng Đạo", lat:14.042692, lng:108.254986, dist:0, zone:""},
+  {id:27, name:"435 Nguyễn Huệ", lat:13.994976, lng:108.119636, dist:0, zone:""},
+  {id:28, name:"306 CMT8", lat:13.9871, lng:108.02, dist:0, zone:""},
+  {id:29, name:"115 Cách Mạng Tháng ", lat:13.9874, lng:108.011, dist:0, zone:""},
+  {id:30, name:"45C Phan Đình Phùng", lat:13.985192, lng:108.004116, dist:0, zone:""},
+  {id:31, name:"331 Hùng Vương", lat:13.96203, lng:107.840214, dist:0, zone:""},
+  {id:32, name:"62 Nguyễn Văn Cừ", lat:13.9724334, lng:107.989535, dist:0, zone:""},
+  {id:33, name:"108 Lê Thánh Tôn", lat:13.9684381270918, lng:107.992150903714, dist:0, zone:""},
+  {id:34, name:"105-107 Thống Nhất", lat:13.9726905822754, lng:107.999549865723, dist:0, zone:""},
+  {id:35, name:"40B Hùng Vương", lat:13.9754810333252, lng:107.997077941895, dist:0, zone:""},
+  {id:36, name:"260 Phạm Văn Đồng", lat:14.000534, lng:107.995798, dist:0, zone:""},
+  {id:37, name:"230 Phan Đình Phùng", lat:13.9810037612915, lng:107.994140625, dist:0, zone:""},
+  {id:38, name:"WM Pleiku", lat:13.97979545, lng:107.9960479, dist:0, zone:""},
+  {id:39, name:"27-29 Nguyễn Văn Trỗ", lat:13.9778, lng:108.004, dist:0, zone:""},
+  {id:40, name:"45 Lê Lợi", lat:13.9795433, lng:108.006338, dist:0, zone:""},
+  {id:41, name:"59 Nguyễn Viết Xuân", lat:13.9621581, lng:108.0065878, dist:0, zone:""},
+  {id:42, name:"100 Nguyễn Viết Xuân", lat:13.9725434, lng:108.0080704, dist:0, zone:""},
+  {id:43, name:"29-31 Phù Đồng", lat:13.977597, lng:108.014796, dist:0, zone:""},
+  {id:44, name:"32 Lê Duẩn", lat:13.9700412750244, lng:108.021560668945, dist:0, zone:""},
+  {id:45, name:"Thôn Chiên Chiết, Bơ", lat:14.702304, lng:107.671683, dist:0, zone:""},
+  {id:46, name:"888 Hùng Vương", lat:14.706877, lng:107.68919, dist:0, zone:""},
+  {id:47, name:" Đường Hùng Vương, Đ", lat:14.644597, lng:107.84514, dist:0, zone:""},
+  {id:48, name:"245 Trần Hưng Đạo", lat:14.407485, lng:107.797901, dist:0, zone:""},
+  {id:49, name:"112 Hoàng Thị Loan", lat:14.365142, lng:107.99466, dist:0, zone:""},
+  {id:50, name:"Võ Nguyên Giáp, Măng", lat:14.60372, lng:108.2888641, dist:0, zone:""},
+  {id:51, name:"1A Bà Triệu", lat:14.354829, lng:108.021184, dist:0, zone:""},
+  {id:52, name:"209A Trần Phú", lat:14.3599462509155, lng:108.008903503418, dist:0, zone:""},
+  {id:53, name:"580 Trần Phú", lat:14.3515577316284, lng:108.006156921387, dist:0, zone:""},
+  {id:54, name:"625 Duy Tân", lat:14.3633880615234, lng:108.00025177002, dist:0, zone:""},
+  {id:55, name:"258 Trần Khánh Dư", lat:14.368696, lng:108.006801, dist:0, zone:""},
+  {id:56, name:"51 Nguyễn Văn Linh", lat:14.337024, lng:107.993058, dist:0, zone:""}
+];
+
+// ── GXT DEPOTS ──────────────────────────────────────────────────
+const GXT_VT = { name: "GXT Pleiku", lat: 13.98, lng: 108.01, color: "#3B82F6", status: "NEW" };
+const GXT_PT = { name: "GXT Kon Tum", lat: 14.35, lng: 108.0, color: "#F26522", status: "NEW" };
+
+// ── DISTANCE CALCULATION ────────────────────────────────────────
+function haversine(lat1, lng1, lat2, lng2) {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) * Math.sin(dLng/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+// Assign each store to nearest GXT
+stores.forEach(s => {
+  const dVT = haversine(s.lat, s.lng, GXT_VT.lat, GXT_VT.lng);
+  const dPT = haversine(s.lat, s.lng, GXT_PT.lat, GXT_PT.lng);
+  s.gxt = dVT <= dPT ? 'VT' : 'PT';
+  s.distToGxt = s.gxt === 'VT' ? dVT : dPT;
+  s.gxtName = s.gxt === 'VT' ? GXT_VT.name : GXT_PT.name;
+});
+
+// ── VEHICLE DEFINITIONS ─────────────────────────────────────────
+// Helper: find store by partial name match
+function findStore(keyword) {
+  const kw = keyword.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  let best = null, bestScore = -1;
+  for (const s of stores) {
+    const sn = s.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    if (sn.includes(kw)) {
+      const score = kw.length / sn.length;
+      if (score > bestScore) { bestScore = score; best = s; }
+    }
+  }
+  return best;
+}
+
+function findStores(keywords) {
+  return keywords.map(k => findStore(k)).filter(Boolean);
+}
+
+const vehicles = [
+  {
+    id: "GL-1", gxt: "VT", depot: GXT_VT, color: "#60A5FA",
+    trips: [
+      findStores(["Trần Hưng Đạo, Krông","Hùng Vương, Phú Túc","42 Nguyễn Huệ, Đoàn ","463 - 465 Trần Hưng ","Ia Mrơn, Ia Pa"]),
+      findStores(["511 Quang Trung","1107 - 1109 Quang Tr","Tổ dân phố 2, Xã Đak","Lô 01 Nguyễn Huệ, Kô","435 Hùng Vương, Phú "]),
+      findStores(["Thôn Mook Đen 2, Ia ","380 Quang Trung","Thôn Hợp Hòa, Ia Dra","160 Hùng Vương","760A Hùng Vương"])
+    ]
+  },
+  {
+    id: "GL-2", gxt: "VT", depot: GXT_VT, color: "#F87171",
+    trips: [
+      findStores(["176 Hùng Vương","904B Hùng Vương","Trường Chinh, Xã Gào","339 Trường Chinh","02 Nơ Trang Long"]),
+      findStores(["Tổ Dân Phố 2, Ia Ly","Thôn 7, Biển Hồ","Tổ 06, Trường Sơn","04 Trường Sơn, TP Pl","324 Tôn Đức Thắng"]),
+      findStores(["256 Trần Hưng Đạo","435 Nguyễn Huệ","306 CMT8","115 Cách Mạng Tháng ","45C Phan Đình Phùng"])
+    ]
+  },
+  {
+    id: "GL-3", gxt: "VT", depot: GXT_VT, color: "#34D399",
+    trips: [
+      findStores(["331 Hùng Vương","62 Nguyễn Văn Cừ","108 Lê Thánh Tôn","105-107 Thống Nhất","40B Hùng Vương"]),
+      findStores(["260 Phạm Văn Đồng","230 Phan Đình Phùng","WM Pleiku","27-29 Nguyễn Văn Trỗ","45 Lê Lợi"]),
+      findStores(["59 Nguyễn Viết Xuân","100 Nguyễn Viết Xuân","29-31 Phù Đồng","32 Lê Duẩn"])
+    ]
+  },
+  {
+    id: "KT-1", gxt: "PT", depot: GXT_PT, color: "#60A5FA",
+    trips: [
+      findStores(["Thôn Chiên Chiết, Bơ","888 Hùng Vương"," Đường Hùng Vương, Đ","245 Trần Hưng Đạo","112 Hoàng Thị Loan"]),
+      findStores(["Võ Nguyên Giáp, Măng","1A Bà Triệu","209A Trần Phú","580 Trần Phú","625 Duy Tân"]),
+      findStores(["258 Trần Khánh Dư","51 Nguyễn Văn Linh"])
+    ]
+  },
+];
+
+// Assign vehicle to stores
+vehicles.forEach(v => {
+  v.trips.forEach(trip => {
+    trip.forEach(s => { if (s) s.vehicle = v.id; });
+  });
+});
+
+// ── MAP INITIALIZATION ─────────────────────────────────────────
+const map = L.map('map', {
+  center: [14.15, 108.00],
+  zoom: 9,
+  zoomControl: false,
+  attributionControl: false
+});
+
+L.control.zoom({ position: 'topright' }).addTo(map);
+
+// Dark Matter tiles
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+  subdomains: 'abcd',
+  maxZoom: 19
+}).addTo(map);
+
+// ── 30KM RADIUS CIRCLES ────────────────────────────────────────
+L.circle([GXT_VT.lat, GXT_VT.lng], {
+  radius: 30000,
+  color: '#3B82F6',
+  fillColor: '#3B82F6',
+  fillOpacity: 0.06,
+  weight: 1.5,
+  opacity: 0.3,
+  dashArray: '8,6'
+}).addTo(map);
+
+L.circle([GXT_PT.lat, GXT_PT.lng], {
+  radius: 30000,
+  color: '#F26522',
+  fillColor: '#F26522',
+  fillOpacity: 0.06,
+  weight: 1.5,
+  opacity: 0.3,
+  dashArray: '8,6'
+}).addTo(map);
+
+// ── GXT WAREHOUSE MARKERS ──────────────────────────────────────
+function createGxtMarker(gxt) {
+  const isVT = gxt === GXT_VT;
+  const color = isVT ? '#3B82F6' : '#F26522';
+  const icon = L.divIcon({
+    className: '',
+    html: `<div class="gxt-marker" style="width:40px;height:40px;background:${color};">W</div>`,
+    iconSize: [40, 40],
+    iconAnchor: [20, 20]
+  });
+  const storeCount = stores.filter(s => s.gxt === (isVT ? 'VT' : 'PT')).length;
+  const vCount = isVT ? 4 : 4;
+  const marker = L.marker([gxt.lat, gxt.lng], { icon, zIndexOffset: 1000 }).addTo(map);
+  marker.bindPopup(`
+    <div class="popup-content">
+      <h4 class="${isVT?'blue':'orange'}">${gxt.name}</h4>
+      <div class="popup-row"><span class="label">Status</span><span class="value">${gxt.status === 'EXISTING' ? '✅ Hiện hữu' : '🆕 Mở mới'}</span></div>
+      <div class="popup-row"><span class="label">Coordinates</span><span class="value">${gxt.lat.toFixed(3)}, ${gxt.lng.toFixed(3)}</span></div>
+      <div class="popup-row"><span class="label">Stores served</span><span class="value">${storeCount}</span></div>
+      <div class="popup-row"><span class="label">Vehicles</span><span class="value">${vCount}</span></div>
+      <div class="popup-row"><span class="label">Coverage</span><span class="value">30 km radius</span></div>
+    </div>
+  `, { maxWidth: 280 });
+}
+createGxtMarker(GXT_VT);
+createGxtMarker(GXT_PT);
+
+// ── STORE MARKERS ───────────────────────────────────────────────
+const storeMarkers = [];
+stores.forEach(s => {
+  const color = s.gxt === 'VT' ? '#3B82F6' : '#F26522';
+  const fillColor = s.gxt === 'VT' ? '#60A5FA' : '#FB923C';
+  const cm = L.circleMarker([s.lat, s.lng], {
+    radius: 6,
+    color: color,
+    fillColor: fillColor,
+    fillOpacity: 0.85,
+    weight: 1.5,
+    opacity: 0.9
+  }).addTo(map);
+
+  const vehicleInfo = s.vehicle ? `<div class="popup-row"><span class="label">Vehicle</span><span class="value">${s.vehicle}</span></div>` : '';
+  cm.bindPopup(`
+    <div class="popup-content">
+      <h4 class="${s.gxt === 'VT' ? 'blue' : 'orange'}">${s.name}</h4>
+      <div class="popup-row"><span class="label">GXT</span><span class="value">${s.gxtName}</span></div>
+      <div class="popup-row"><span class="label">Distance to GXT</span><span class="value">${s.distToGxt.toFixed(1)} km</span></div>
+      <div class="popup-row"><span class="label">Zone</span><span class="value">${s.zone}</span></div>
+      ${vehicleInfo}
+    </div>
+  `, { maxWidth: 260 });
+
+  cm.bindTooltip(s.name.replace('WM+ PTO ', '').replace('WM VC+ PTO ', ''), {
+    className: 'store-tooltip',
+    direction: 'top',
+    offset: [0, -8]
+  });
+  storeMarkers.push(cm);
+});
+
+// Custom tooltip style
+const tooltipStyle = document.createElement('style');
+tooltipStyle.textContent = `
+  .store-tooltip {
+    background: rgba(15,23,42,0.92) !important;
+    backdrop-filter: blur(8px);
+    color: #f1f5f9 !important;
+    border: 1px solid rgba(148,163,184,0.2) !important;
+    border-radius: 6px !important;
+    padding: 4px 10px !important;
+    font-family: 'Inter', sans-serif !important;
+    font-size: 11px !important;
+    font-weight: 500 !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important;
+  }
+  .store-tooltip::before { border-top-color: rgba(15,23,42,0.92) !important; }
+`;
+document.head.appendChild(tooltipStyle);
+
+// ── VEHICLE ROUTES ──────────────────────────────────────────────
+const routeLayers = {};
+
+function getDashArray(tripIndex) {
+  switch(tripIndex) {
+    case 0: return '10,8';   // Trip 1: dashed
+    case 1: return null;      // Trip 2: solid
+    case 2: return '3,6';    // Trip 3: dotted
+    default: return null;
+  }
+}
+
+vehicles.forEach(v => {
+  routeLayers[v.id] = [];
+  v.trips.forEach((trip, ti) => {
+    if (trip.length === 0) return;
+    const pts = [[v.depot.lat, v.depot.lng]];
+    trip.forEach(s => pts.push([s.lat, s.lng]));
+    pts.push([v.depot.lat, v.depot.lng]);
+
+    const dashArray = getDashArray(ti);
+    const polyline = L.polyline(pts, {
+      color: v.color,
+      weight: 2.5,
+      opacity: 0.75,
+      dashArray: dashArray,
+      lineCap: 'round',
+      lineJoin: 'round'
+    }).addTo(map);
+    routeLayers[v.id].push(polyline);
+  });
+});
+
+// ── VEHICLE TOGGLE ──────────────────────────────────────────────
+const vehicleVisibility = {};
+vehicles.forEach(v => { vehicleVisibility[v.id] = true; });
+
+function toggleVehicle(vehicleId) {
+  vehicleVisibility[vehicleId] = !vehicleVisibility[vehicleId];
+  const layers = routeLayers[vehicleId];
+  layers.forEach(l => {
+    if (vehicleVisibility[vehicleId]) {
+      l.addTo(map);
+    } else {
+      map.removeLayer(l);
+    }
+  });
+  renderVehicleGrid();
+}
+
+// ── VEHICLE GRID (Sidebar) ──────────────────────────────────────
+function renderVehicleGrid() {
+  const grid = document.getElementById('vehicle-grid');
+  grid.innerHTML = '';
+  vehicles.forEach(v => {
+    const active = vehicleVisibility[v.id];
+    const tripInfo = v.trips.map((t, i) => {
+      const km = t.reduce((sum, s) => sum + (s ? s.distToGxt : 0), 0);
+      return `<span class="trip-chip">T${i+1}: ${t.length}s/${km.toFixed(0)}km</span>`;
+    }).join('');
+
+    const row = document.createElement('div');
+    row.className = `vehicle-row ${active ? 'active' : ''}`;
+    row.style.opacity = active ? 1 : 0.4;
+    row.onclick = () => toggleVehicle(v.id);
+    row.innerHTML = `
+      <div class="vehicle-dot" style="background:${v.color};${active?`box-shadow:0 0 8px ${v.color};`:''}"></div>
+      <span class="vehicle-name" style="color:${v.color};">${v.id}</span>
+      <div class="vehicle-trips">${tripInfo}</div>
+    `;
+    grid.appendChild(row);
+  });
+}
+renderVehicleGrid();
+
+// ── SIDEBAR TOGGLE ──────────────────────────────────────────────
+function toggleSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  const btn = document.getElementById('sidebar-toggle');
+  sidebar.classList.toggle('collapsed');
+  btn.textContent = sidebar.classList.contains('collapsed') ? '☰' : '✕';
+}
+</script>
+</body>
+</html>
