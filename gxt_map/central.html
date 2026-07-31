@@ -1018,17 +1018,27 @@ vehicles.forEach(v => {
 const vehicleVisibility = {};
 vehicles.forEach(v => { vehicleVisibility[v.id] = true; });
 
-function toggleVehicle(vehicleId) {
+function toggleVehicle(vehicleId, rowElement) {
   vehicleVisibility[vehicleId] = !vehicleVisibility[vehicleId];
+  const active = vehicleVisibility[vehicleId];
   const layers = routeLayers[vehicleId];
   layers.forEach(l => {
-    if (vehicleVisibility[vehicleId]) {
+    if (active) {
       l.addTo(map);
     } else {
       map.removeLayer(l);
     }
   });
-  renderVehicleGrid();
+  
+  if (rowElement) {
+    rowElement.style.opacity = active ? 1 : 0.4;
+    rowElement.className = `vehicle-row ${active ? 'active' : ''}`;
+    const dot = rowElement.querySelector('.vehicle-dot');
+    if (dot) {
+      const v = vehicles.find(veh => veh.id === vehicleId);
+      dot.style.boxShadow = active ? `0 0 8px ${v.color}` : 'none';
+    }
+  }
 }
 
 // ── VEHICLE GRID (Sidebar) ──────────────────────────────────────
@@ -1045,9 +1055,9 @@ function renderVehicleGrid() {
     const row = document.createElement('div');
     row.className = `vehicle-row ${active ? 'active' : ''}`;
     row.style.opacity = active ? 1 : 0.4;
-    row.onclick = () => toggleVehicle(v.id);
+    row.onclick = function() { toggleVehicle(v.id, this); };
     row.innerHTML = `
-      <div class="vehicle-dot" style="background:${v.color};${active?`box-shadow:0 0 8px ${v.color};`:''}"></div>
+      <div class="vehicle-dot" style="background:${v.color};box-shadow:${active?`0 0 8px ${v.color}`:'none'};"></div>
       <span class="vehicle-name" style="color:${v.color};">${v.id}</span>
       <div class="vehicle-trips">${tripInfo}</div>
     `;
