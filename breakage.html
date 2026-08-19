@@ -1,0 +1,1396 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rillnet - Bể vỡ & Truy thu</title>
+  
+  <!-- CDNs -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  
+  <style>
+    /* CSS Variables matching Rillnet */
+    :root {
+      --navy: #0c8f8a;
+      --navy2: #0a7373;
+      --blue: #0fa8a2;
+      --blue-soft: #e9f9f8;
+      --green: #0f9d58;
+      --green-soft: #e8f7ef;
+      --amber: #b45309;
+      --amber-soft: #fdf3e3;
+      --amber-line: #f0dcae;
+      --purple: #6d28d9;
+      --purple-soft: #f4f0fe;
+      --red: #dc2626;
+      --red-soft: #fdecec;
+      --grey: #6b6b6b;
+      --line: #e6e6e6;
+      --bg: #ffffff;
+      --ink: #111111;
+      --teal: #0fa8a2;
+      --teal-strong: #0c8f8a;
+      --teal-bg: #e9f9f8;
+      --soft: #fafafa;
+      --soft2: #f4f4f4;
+      --radius: 10px;
+      --radius-sm: 8px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+      background-color: var(--soft);
+      color: var(--ink);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    /* Layout */
+    .app-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Topbar */
+    .topbar {
+      background: var(--bg);
+      border-bottom: 1px solid var(--line);
+      padding: 12px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .logo-area {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo {
+      font-weight: 700;
+      font-size: 20px;
+      color: var(--teal-strong);
+      letter-spacing: -0.5px;
+    }
+
+    .subtitle {
+      color: var(--grey);
+      font-size: 14px;
+      padding-left: 12px;
+      border-left: 1px solid var(--line);
+    }
+
+    .nav-tabs {
+      display: flex;
+      background: var(--soft2);
+      padding: 4px;
+      border-radius: 20px;
+    }
+
+    .nav-tab {
+      padding: 6px 16px;
+      border-radius: 16px;
+      cursor: pointer;
+      font-weight: 500;
+      color: var(--grey);
+      transition: all 0.2s;
+    }
+
+    .nav-tab.active {
+      background: var(--bg);
+      color: var(--teal-strong);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    .user-profile {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 500;
+    }
+
+    .user-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--teal-bg);
+      color: var(--teal-strong);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+    }
+
+    /* Main Content */
+    .main-content {
+      padding: 24px;
+      flex: 1;
+    }
+
+    /* Views */
+    .view {
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .view.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 16px;
+      border-radius: var(--radius-sm);
+      font-weight: 500;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.2s;
+      gap: 6px;
+      font-size: 14px;
+    }
+
+    .btn-primary {
+      background: var(--teal-strong);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--navy);
+    }
+
+    .btn-outline {
+      background: transparent;
+      border-color: var(--line);
+      color: var(--ink);
+    }
+
+    .btn-outline:hover {
+      border-color: var(--teal-strong);
+      color: var(--teal-strong);
+    }
+
+    .btn-text {
+      background: transparent;
+      color: var(--teal-strong);
+      padding: 4px 8px;
+    }
+
+    .btn-text:hover {
+      background: var(--teal-bg);
+    }
+
+    /* KPI Tiles */
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .kpi-tile {
+      background: var(--bg);
+      padding: 16px;
+      border-radius: var(--radius);
+      border: 1px solid var(--line);
+      border-top: 4px solid var(--line);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+    }
+
+    .kpi-tile.c-teal { border-top-color: var(--teal-strong); }
+    .kpi-tile.c-amber { border-top-color: var(--amber); }
+    .kpi-tile.c-blue { border-top-color: var(--blue); }
+    .kpi-tile.c-red { border-top-color: var(--red); }
+    .kpi-tile.c-green { border-top-color: var(--green); }
+
+    .kpi-title {
+      font-size: 13px;
+      color: var(--grey);
+      margin-bottom: 8px;
+    }
+
+    .kpi-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    /* Filter Bar */
+    .filter-bar {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+      background: var(--bg);
+      padding: 12px;
+      border-radius: var(--radius);
+      border: 1px solid var(--line);
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .form-control {
+      padding: 8px 12px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+      background: var(--bg);
+    }
+
+    .form-control:focus {
+      border-color: var(--teal-strong);
+    }
+
+    /* Dashboard Layout */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 24px;
+    }
+
+    @media (max-width: 900px) {
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+      }
+      .kpi-row {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    /* Incident Cards */
+    .card-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .incident-card {
+      background: var(--bg);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 16px;
+      display: flex;
+      justify-content: space-between;
+      border-left: 4px solid var(--line);
+      cursor: pointer;
+      transition: transform 0.1s, box-shadow 0.1s;
+    }
+
+    .incident-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+
+    .ic-new { border-left-color: var(--red); }
+    .ic-investigating { border-left-color: var(--amber); }
+    .ic-recovery { border-left-color: var(--blue); }
+    .ic-closed { border-left-color: var(--green); }
+
+    .ic-main {
+      flex: 1;
+    }
+
+    .ic-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+
+    .ic-code {
+      font-weight: 600;
+      color: var(--ink);
+    }
+
+    .badge {
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .bg-red { background: var(--red-soft); color: var(--red); }
+    .bg-amber { background: var(--amber-soft); color: var(--amber); }
+    .bg-blue { background: var(--blue-soft); color: var(--blue); }
+    .bg-green { background: var(--green-soft); color: var(--green); }
+    .bg-grey { background: var(--soft2); color: var(--grey); }
+
+    .ic-meta {
+      font-size: 13px;
+      color: var(--grey);
+      margin-bottom: 8px;
+      display: flex;
+      gap: 16px;
+    }
+
+    .ic-product {
+      font-weight: 500;
+      color: var(--ink);
+    }
+
+    .ic-value {
+      font-weight: 600;
+      color: var(--red);
+    }
+
+    .chart-container {
+      background: var(--bg);
+      padding: 20px;
+      border-radius: var(--radius);
+      border: 1px solid var(--line);
+    }
+
+    /* Form View */
+    .form-container {
+      background: var(--bg);
+      padding: 32px;
+      border-radius: var(--radius);
+      border: 1px solid var(--line);
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .form-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .form-title {
+      font-size: 20px;
+      font-weight: 600;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-group.full {
+      grid-column: 1 / -1;
+    }
+
+    .form-label {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--grey);
+    }
+
+    textarea.form-control {
+      min-height: 100px;
+      resize: vertical;
+    }
+
+    .upload-zone {
+      border: 2px dashed var(--line);
+      border-radius: var(--radius);
+      padding: 32px;
+      text-align: center;
+      background: var(--soft);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .upload-zone:hover, .upload-zone.dragover {
+      border-color: var(--teal-strong);
+      background: var(--teal-bg);
+    }
+
+    .upload-zone p {
+      color: var(--grey);
+      margin-top: 8px;
+    }
+
+    .preview-list {
+      display: flex;
+      gap: 12px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+
+    .preview-item {
+      width: 80px;
+      height: 80px;
+      border-radius: var(--radius-sm);
+      object-fit: cover;
+      border: 1px solid var(--line);
+    }
+
+    /* Detail View */
+    .detail-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 24px;
+    }
+    
+    @media (max-width: 900px) {
+      .detail-grid { grid-template-columns: 1fr; }
+    }
+
+    .detail-card {
+      background: var(--bg);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+
+    .detail-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 20px;
+    }
+
+    .evidence-gallery {
+      display: flex;
+      gap: 12px;
+      overflow-x: auto;
+      padding-bottom: 12px;
+    }
+
+    .evidence-img {
+      height: 120px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--line);
+      cursor: pointer;
+    }
+
+    .timeline {
+      margin-top: 24px;
+      position: relative;
+      padding-left: 20px;
+    }
+
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 7px;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: var(--line);
+    }
+
+    .timeline-item {
+      position: relative;
+      margin-bottom: 16px;
+    }
+
+    .timeline-item::before {
+      content: '';
+      position: absolute;
+      left: -20px;
+      top: 6px;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--teal-strong);
+      border: 2px solid var(--bg);
+    }
+
+    .investigation-panel {
+      background: var(--bg);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 20px;
+      position: sticky;
+      top: 80px;
+    }
+
+    .radio-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .radio-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+
+    .comments-section {
+      margin-top: 24px;
+      border-top: 1px solid var(--line);
+      padding-top: 16px;
+    }
+
+    .comment {
+      background: var(--soft);
+      padding: 12px;
+      border-radius: var(--radius-sm);
+      margin-bottom: 12px;
+    }
+
+    .comment-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--grey);
+      margin-bottom: 4px;
+    }
+
+    /* Table */
+    .table-responsive {
+      overflow-x: auto;
+      background: var(--bg);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    th, td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    th {
+      background: var(--soft);
+      font-weight: 500;
+      color: var(--grey);
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tr:hover td {
+      background: var(--soft);
+    }
+
+    /* Toast */
+    .toast-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .toast {
+      background: var(--ink);
+      color: white;
+      padding: 12px 24px;
+      border-radius: var(--radius-sm);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      animation: slideIn 0.3s ease forwards, fadeOut 0.3s ease 2.7s forwards;
+    }
+
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    @keyframes fadeOut {
+      from { opacity: 1; }
+      to { opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <header class="topbar">
+      <div class="logo-area">
+        <a href="/" style="text-decoration:none"><div class="logo">Rillnet</div></a>
+        <div class="subtitle">Bể vỡ & Truy thu</div>
+      </div>
+      <div class="nav-tabs">
+        <div class="nav-tab active" onclick="app.switchView('dashboard')">Bảng điều khiển</div>
+        <div class="nav-tab" onclick="app.switchView('recovery')">Quản lý Truy thu</div>
+      </div>
+      <div class="user-profile">
+        <div class="user-avatar" id="currentUserInitial">A</div>
+        <span id="currentUserName">Admin</span>
+      </div>
+    </header>
+
+    <main class="main-content">
+      <!-- VIEW 1: Dashboard -->
+      <div id="view-dashboard" class="view active">
+        <div class="kpi-row">
+          <div class="kpi-tile c-teal">
+            <div class="kpi-title">Tổng sự cố</div>
+            <div class="kpi-value" id="kpiTotal">0</div>
+          </div>
+          <div class="kpi-tile c-amber">
+            <div class="kpi-title">Đang xử lý</div>
+            <div class="kpi-value" id="kpiInvestigating">0</div>
+          </div>
+          <div class="kpi-tile c-blue">
+            <div class="kpi-title">Đã truy thu (VNĐ)</div>
+            <div class="kpi-value" id="kpiRecovered">0</div>
+          </div>
+          <div class="kpi-tile c-red">
+            <div class="kpi-title">Chờ thu (VNĐ)</div>
+            <div class="kpi-value" id="kpiPending">0</div>
+          </div>
+          <div class="kpi-tile c-green">
+            <div class="kpi-title">Tỷ lệ bể vỡ (Tháng)</div>
+            <div class="kpi-value" id="kpiRate">0.12%</div>
+          </div>
+        </div>
+
+        <div class="filter-bar">
+          <select class="form-control" id="filterStatus" onchange="app.renderIncidents()">
+            <option value="">Tất cả trạng thái</option>
+            <option value="Mới">Mới</option>
+            <option value="Đang điều tra">Đang điều tra</option>
+            <option value="Đã gán truy thu">Đã gán truy thu</option>
+            <option value="Đã đóng">Đã đóng</option>
+          </select>
+          <select class="form-control" id="filterProject" onchange="app.renderIncidents()">
+            <option value="">Tất cả dự án</option>
+            <option value="WinMart">WinMart</option>
+            <option value="Bách Hóa Xanh">Bách Hóa Xanh</option>
+            <option value="Chung">Chung</option>
+          </select>
+          <input type="month" class="form-control" id="filterMonth">
+          <div style="flex:1"></div>
+          <button class="btn btn-primary" onclick="app.switchView('form')">+ Báo cáo bể vỡ mới</button>
+        </div>
+
+        <div class="dashboard-grid">
+          <div class="card-list" id="incidentList">
+            <!-- Rendered via JS -->
+          </div>
+          <div class="chart-container">
+            <h3 style="margin-bottom: 16px; font-size: 16px;">Xu hướng Bể vỡ</h3>
+            <canvas id="breakageChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIEW 2: Form Báo cáo mới -->
+      <div id="view-form" class="view">
+        <div class="form-container">
+          <div class="form-header">
+            <button class="btn btn-outline" onclick="app.switchView('dashboard')">← Quay lại</button>
+            <div class="form-title">Báo cáo Sự cố Bể vỡ / Mất hàng</div>
+          </div>
+          <form id="newIncidentForm" onsubmit="app.submitIncident(event)">
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label">Mã đơn hàng / Tracking</label>
+                <input type="text" class="form-control" name="tracking" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Dự án</label>
+                <select class="form-control" name="project" required>
+                  <option value="WinMart">WinMart</option>
+                  <option value="Bách Hóa Xanh">Bách Hóa Xanh</option>
+                  <option value="Chung">Chung</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Loại sự cố</label>
+                <select class="form-control" name="type" required>
+                  <option value="Hư hỏng">Hư hỏng</option>
+                  <option value="Mất hàng">Mất hàng</option>
+                  <option value="Thiếu hàng">Thiếu hàng</option>
+                  <option value="Ướt-Bẩn">Ướt-Bẩn</option>
+                  <option value="Khác">Khác</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Khâu phát hiện</label>
+                <select class="form-control" name="stage" required>
+                  <option value="Giao hàng">Giao hàng</option>
+                  <option value="Sorting">Sorting</option>
+                  <option value="Linehaul">Linehaul</option>
+                  <option value="Nhập kho">Nhập kho</option>
+                  <option value="Khách phản hồi">Khách phản hồi</option>
+                </select>
+              </div>
+              <div class="form-group full">
+                <label class="form-label">Tên sản phẩm</label>
+                <input type="text" class="form-control" name="product" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Số lượng hư/mất</label>
+                <input type="number" class="form-control" name="qty" required min="1">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Giá trị ước tính (VNĐ)</label>
+                <input type="number" class="form-control" name="value" required min="0">
+              </div>
+              <div class="form-group full">
+                <label class="form-label">Vị trí phát hiện (Kho/Hub)</label>
+                <input type="text" class="form-control" name="location" required>
+              </div>
+              <div class="form-group full">
+                <label class="form-label">Mô tả chi tiết</label>
+                <textarea class="form-control" name="description" required></textarea>
+              </div>
+              <div class="form-group full">
+                <label class="form-label">Ảnh chứng cứ (Kéo thả hoặc click)</label>
+                <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+                  <input type="file" id="fileInput" multiple accept="image/*" style="display:none" onchange="app.handleFiles(this.files)">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--teal)">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+                  </svg>
+                  <p>Click hoặc kéo thả ảnh vào đây</p>
+                </div>
+                <div class="preview-list" id="previewList"></div>
+              </div>
+              <div class="form-group full" style="margin-top: 16px; text-align: right;">
+                <button type="submit" class="btn btn-primary">Gửi báo cáo</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- VIEW 3: Chi tiết Điều tra -->
+      <div id="view-detail" class="view">
+        <div style="margin-bottom: 16px;">
+          <button class="btn btn-text" onclick="app.switchView('dashboard')">Dashboard</button>
+          <span style="color:var(--grey)">/</span>
+          <span style="font-weight:600" id="detailCode">INC-XXX</span>
+        </div>
+        <div class="detail-grid">
+          <div class="detail-left">
+            <div class="detail-card">
+              <div class="detail-header">
+                <div>
+                  <h2 style="margin-bottom: 8px;" id="dTitle">Sản phẩm XYZ</h2>
+                  <div class="ic-meta" id="dMeta">
+                    <!-- Meta JS -->
+                  </div>
+                </div>
+                <div id="dStatusBadge"></div>
+              </div>
+              <p style="margin-bottom: 16px; color: var(--grey)" id="dDesc">Mô tả...</p>
+              
+              <h4 style="margin-bottom: 12px; font-size: 14px;">Ảnh chứng cứ</h4>
+              <div class="evidence-gallery" id="dEvidence">
+                <!-- Imgs JS -->
+              </div>
+
+              <h4 style="margin-top: 24px; margin-bottom: 12px; font-size: 14px;">Lịch sử</h4>
+              <div class="timeline" id="dTimeline">
+                <div class="timeline-item">
+                  <div style="font-weight:500">Báo cáo mới tạo</div>
+                  <div style="font-size:12px; color:var(--grey)">10/08/2026 14:00 - bởi Admin</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="detail-right">
+            <div class="investigation-panel">
+              <h3 style="margin-bottom: 16px; font-size: 16px;">Kết luận Điều tra & Truy thu</h3>
+              <div class="form-group" style="margin-bottom: 16px;">
+                <label class="form-label">Nguyên nhân gốc rễ (Root Cause)</label>
+                <div class="radio-group" id="rootCauseGroup">
+                  <label class="radio-label"><input type="radio" name="rcause" value="Lỗi vận chuyển"> 🚛 Lỗi vận chuyển (Linehaul)</label>
+                  <label class="radio-label"><input type="radio" name="rcause" value="Lỗi kho"> 🏭 Lỗi kho / Sorting</label>
+                  <label class="radio-label"><input type="radio" name="rcause" value="Lỗi đóng gói"> 📦 Lỗi đóng gói (Shipper)</label>
+                  <label class="radio-label"><input type="radio" name="rcause" value="Lỗi tài xế"> 👤 Lỗi tài xế</label>
+                  <label class="radio-label"><input type="radio" name="rcause" value="Chia sẻ"> ⚖️ Chia sẻ trách nhiệm</label>
+                  <label class="radio-label"><input type="radio" name="rcause" value="Bất khả kháng"> 🌧 Bất khả kháng</label>
+                </div>
+              </div>
+
+              <div class="form-group" style="margin-bottom: 16px;">
+                <label class="form-label">Gán truy thu</label>
+                <input type="text" class="form-control" id="rcvAssignee" placeholder="Tên nhân sự / Đội ngũ" style="margin-bottom: 8px;">
+                <select class="form-control" id="rcvType" style="margin-bottom: 8px;">
+                  <option value="Nhân viên">Nhân viên</option>
+                  <option value="Đối tác">Đối tác</option>
+                  <option value="Tài xế">Tài xế</option>
+                </select>
+                <div style="display:flex; gap:12px; align-items:center;">
+                  <input type="number" class="form-control" id="rcvPercent" placeholder="%" min="0" max="100" style="width: 80px;" oninput="app.calcRcvVal()">
+                  <span style="color:var(--grey)">% = <strong style="color:var(--red)" id="rcvCalcVal">0đ</strong></span>
+                </div>
+              </div>
+
+              <div class="form-group" style="margin-bottom: 16px;">
+                <label class="form-label">Ghi chú điều tra</label>
+                <textarea class="form-control" id="invNote" style="min-height:60px"></textarea>
+              </div>
+
+              <button class="btn btn-primary" style="width:100%" onclick="app.assignRecovery()">Xác nhận & Gán truy thu</button>
+
+              <div id="existingRecoveries" style="margin-top:16px"></div>
+
+              <div class="comments-section">
+                <h4 style="margin-bottom: 12px; font-size: 13px;">Trao đổi</h4>
+                <div id="commentList"></div>
+                <div style="display:flex; gap:8px; margin-top:12px;">
+                  <input type="text" class="form-control" id="newComment" placeholder="Viết bình luận..." style="flex:1" onkeypress="if(event.key==='Enter') app.addComment()">
+                  <button class="btn btn-outline" onclick="app.addComment()">Gửi</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIEW 4: Quản lý Truy thu -->
+      <div id="view-recovery" class="view">
+        <div class="kpi-row" style="grid-template-columns: repeat(4, 1fr); margin-bottom: 20px;">
+          <div class="kpi-tile c-teal">
+            <div class="kpi-title">Tổng truy thu</div>
+            <div class="kpi-value" id="rKpiTotal">0</div>
+          </div>
+          <div class="kpi-tile c-green">
+            <div class="kpi-title">Đã thu</div>
+            <div class="kpi-value" id="rKpiCollected" style="color:var(--green)">0</div>
+          </div>
+          <div class="kpi-tile c-amber">
+            <div class="kpi-title">Chưa thu</div>
+            <div class="kpi-value" id="rKpiPending" style="color:var(--amber)">0</div>
+          </div>
+          <div class="kpi-tile c-red">
+            <div class="kpi-title">Tỷ lệ thu hồi</div>
+            <div class="kpi-value" id="rKpiRate" style="color:var(--red)">0%</div>
+          </div>
+        </div>
+
+        <div class="filter-bar">
+          <select class="form-control" id="rFilterStatus" onchange="app.renderRecoveries()">
+            <option value="">Tất cả trạng thái</option>
+            <option value="Chờ thu">Chờ thu</option>
+            <option value="Đã thu">Đã thu</option>
+            <option value="Hủy">Hủy</option>
+          </select>
+          <select class="form-control" id="rFilterType" onchange="app.renderRecoveries()">
+            <option value="">Tất cả đối tượng</option>
+            <option value="Tài xế">Tài xế</option>
+            <option value="Nhân viên">Nhân viên kho</option>
+            <option value="Đối tác">Đối tác/Nhà thầu</option>
+          </select>
+          <div style="flex:1"></div>
+          <button class="btn btn-outline" onclick="app.exportExcel()">📥 Xuất Excel</button>
+        </div>
+
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>Mã RCV</th>
+                <th>Mã Sự cố</th>
+                <th>Đối tượng</th>
+                <th>Phân loại</th>
+                <th>Số tiền truy thu</th>
+                <th>Trạng thái</th>
+                <th>Hành động</th>
+              </tr>
+            </thead>
+            <tbody id="recoveryTableBody">
+              <!-- Render JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <div class="toast-container" id="toastContainer"></div>
+  <div style="position:fixed;bottom:14px;right:14px;background:#111827;color:#fff;font-size:11px;padding:6px 12px;border-radius:20px;opacity:.85;display:flex;align-items:center;gap:8px;z-index:999">
+    🛠 Demo Mode
+    <button onclick="localStorage.removeItem('rn_breakage_incidents');localStorage.removeItem('rn_breakage_recoveries');localStorage.removeItem('rn_breakage_comments');location.reload()" style="border:1px solid rgba(255,255,255,.3);background:none;color:#fff;border-radius:6px;padding:2px 8px;font-size:10px;cursor:pointer">Reset Data</button>
+  </div>
+
+  <script>
+    // --- UTILS ---
+    const utils = {
+      fmtVND: (n) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(n),
+      fmtDate: (iso) => {
+        const d = new Date(iso);
+        return `${d.getDate().toString().padStart(2,'0')}/${(d.getMonth()+1).toString().padStart(2,'0')}/${d.getFullYear()} ${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
+      },
+      getUser: () => {
+        try {
+          const u = sessionStorage.getItem('ghn_auth_user');
+          if(u) return JSON.parse(u);
+        } catch(e) {}
+        return { name: 'Admin Rillnet', email: 'admin@rillnet.com' };
+      },
+      genCode: (prefix, list) => {
+        const year = new Date().getFullYear();
+        const maxId = list.reduce((max, item) => {
+          const parts = item.id.split('-');
+          if (parts[0] === prefix && parts[1] == year) return Math.max(max, parseInt(parts[2]));
+          return max;
+        }, 0);
+        return `${prefix}-${year}-${(maxId + 1).toString().padStart(4, '0')}`;
+      },
+      toast: (msg) => {
+        const c = document.getElementById('toastContainer');
+        const t = document.createElement('div');
+        t.className = 'toast';
+        t.innerText = msg;
+        c.appendChild(t);
+        setTimeout(() => t.remove(), 3000);
+      }
+    };
+
+    // --- DATA LAYER (LocalStorage Demo) ---
+    const db = {
+      incidents: [],
+      recoveries: [],
+      comments: [],
+      init: () => {
+        const storedInc = localStorage.getItem('rn_breakage_incidents');
+        if (storedInc) {
+          db.incidents = JSON.parse(storedInc);
+          db.recoveries = JSON.parse(localStorage.getItem('rn_breakage_recoveries') || '[]');
+          db.comments = JSON.parse(localStorage.getItem('rn_breakage_comments') || '[]');
+        } else {
+          db.seed();
+        }
+      },
+      save: () => {
+        localStorage.setItem('rn_breakage_incidents', JSON.stringify(db.incidents));
+        localStorage.setItem('rn_breakage_recoveries', JSON.stringify(db.recoveries));
+        localStorage.setItem('rn_breakage_comments', JSON.stringify(db.comments));
+      },
+      seed: () => {
+        db.incidents = [
+          { id: 'INC-2026-0001', tracking: 'WMT-88912', project: 'WinMart', type: 'Hư hỏng', stage: 'Giao hàng', product: 'Thùng nước mắm Chinsu', qty: 2, value: 500000, location: 'WinMart Việt Trì', desc: 'Bể chai, chảy nước ướt các thùng khác. Phát hiện lúc giao hàng, tài xế xếp hàng không đúng quy cách.', status: 'Đã gán truy thu', date: '2026-08-10T10:00:00Z', cause: 'Lỗi vận chuyển', images: [] },
+          { id: 'INC-2026-0002', tracking: 'BHX-99211', project: 'Bách Hóa Xanh', type: 'Mất hàng', stage: 'Linehaul', product: 'Sữa tươi Vinamilk 1L (x24)', qty: 1, value: 350000, location: 'Hub Vĩnh Phúc', desc: 'Kiểm đếm thiếu nguyên thùng trên xe linehaul từ DC Supra về Hub Vĩnh Phúc.', status: 'Đang điều tra', date: '2026-08-12T14:30:00Z', images: [] },
+          { id: 'INC-2026-0003', tracking: 'WMT-88955', project: 'WinMart', type: 'Ướt-Bẩn', stage: 'Nhập kho', product: 'Gạo tẻ Hương Lài 5kg', qty: 5, value: 1200000, location: 'Kho Tổng Thanh Ba', desc: 'Mưa dột kho ngoài hiên, ướt 5 bao gạo chưa kịp nhập. Cần kiểm tra hạ tầng kho.', status: 'Mới', date: '2026-08-18T09:15:00Z', images: [] },
+          { id: 'INC-2026-0004', tracking: 'GEN-11234', project: 'Chung', type: 'Hư hỏng', stage: 'Sorting', product: 'Quạt điện Panasonic F-EP405', qty: 1, value: 2500000, location: 'Hub Mê Linh', desc: 'Rơi từ băng chuyền sorting, vỡ vỏ nhựa và gãy cánh quạt. Camera xác nhận lỗi NV sorting.', status: 'Đã đóng', date: '2026-07-25T11:00:00Z', cause: 'Lỗi kho', images: [] },
+          { id: 'INC-2026-0005', tracking: 'WMT-89102', project: 'WinMart', type: 'Hư hỏng', stage: 'Giao hàng', product: 'Bia Tiger (thùng 24 lon)', qty: 3, value: 900000, location: 'WinMart Lâm Thao', desc: 'Tài xế phanh gấp, 3 thùng bia rơi khỏi xe. Móp lon, rỉ bia.', status: 'Đã gán truy thu', date: '2026-08-14T16:20:00Z', cause: 'Lỗi tài xế', images: [] },
+          { id: 'INC-2026-0006', tracking: 'BHX-99340', project: 'Bách Hóa Xanh', type: 'Thiếu hàng', stage: 'Khách phản hồi', product: 'Dầu ăn Simply 2L', qty: 2, value: 180000, location: 'BHX Phù Ninh', desc: 'Khách hàng phản hồi thiếu 2 chai dầu ăn so với đơn đặt. Đã check POD, xác nhận thiếu.', status: 'Đang điều tra', date: '2026-08-16T08:45:00Z', images: [] },
+          { id: 'INC-2026-0007', tracking: 'WMT-89200', project: 'WinMart', type: 'Hư hỏng', stage: 'Linehaul', product: 'Bột giặt Omo 4.5kg', qty: 4, value: 600000, location: 'Linehaul Phú Thọ - Hà Nội', desc: 'Xe tải bị thủng bạt, mưa ướt 4 bao bột giặt. Bao bị ngấm nước, vón cục.', status: 'Mới', date: '2026-08-19T07:30:00Z', images: [] },
+          { id: 'INC-2026-0008', tracking: 'GEN-11302', project: 'Chung', type: 'Mất hàng', stage: 'Sorting', product: 'Nồi cơm điện Sunhouse 1.8L', qty: 1, value: 850000, location: 'Hub Đoan Hùng', desc: 'Scan vào hub nhưng không tìm thấy kiện khi xuất. Nghi ngờ giao nhầm route.', status: 'Đang điều tra', date: '2026-08-15T13:00:00Z', images: [] },
+        ];
+        db.recoveries = [
+          { id: 'RCV-2026-0001', incId: 'INC-2026-0001', assignee: 'Nguyễn Văn A (TX)', type: 'Tài xế', amount: 500000, status: 'Đã thu', date: '2026-08-11T10:00:00Z' },
+          { id: 'RCV-2026-0002', incId: 'INC-2026-0004', assignee: 'Ca 1 - Hub Mê Linh', type: 'Nhân viên', amount: 1250000, status: 'Chờ thu', date: '2026-07-26T10:00:00Z' },
+          { id: 'RCV-2026-0003', incId: 'INC-2026-0005', assignee: 'Trần Minh B (TX)', type: 'Tài xế', amount: 900000, status: 'Chờ thu', date: '2026-08-15T09:00:00Z' },
+          { id: 'RCV-2026-0004', incId: 'INC-2026-0004', assignee: 'Đối tác Sorting Mê Linh', type: 'Đối tác', amount: 1250000, status: 'Đã thu', date: '2026-07-28T10:00:00Z' },
+          { id: 'RCV-2026-0005', incId: 'INC-2026-0001', assignee: 'Bảo hiểm AIA Cargo', type: 'Đối tác', amount: 250000, status: 'Hủy', date: '2026-08-12T10:00:00Z' },
+        ];
+        db.comments = [
+          { incId: 'INC-2026-0001', user: 'Admin Rillnet', text: 'Đã liên hệ tài xế, xác nhận xếp hàng sai.', date: '2026-08-10T15:00:00Z' },
+          { incId: 'INC-2026-0001', user: 'Trưởng kho Việt Trì', text: 'Đã thu hồi hàng hư, chờ quyết định truy thu.', date: '2026-08-10T16:30:00Z' },
+          { incId: 'INC-2026-0002', user: 'Điều phối Hub VP', text: 'Đang review camera linehaul đoạn DC → Hub.', date: '2026-08-13T09:00:00Z' },
+        ];
+        db.save();
+      }
+    };
+
+    // --- APP LOGIC ---
+    const app = {
+      currentView: 'dashboard',
+      currentIncident: null,
+      tempFiles: [],
+      chartInstance: null,
+
+      init: () => {
+        db.init();
+        
+        const user = utils.getUser();
+        document.getElementById('currentUserName').innerText = user.name;
+        document.getElementById('currentUserInitial').innerText = user.name.charAt(0).toUpperCase();
+
+        app.renderIncidents();
+        app.updateKPIs();
+        app.renderChart();
+        app.setupDragDrop();
+      },
+
+      switchView: (viewId, incId = null) => {
+        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+        document.getElementById(`view-${viewId}`).classList.add('active');
+        
+        document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+        if(viewId === 'dashboard' || viewId === 'recovery') {
+          const tabs = document.querySelectorAll('.nav-tab');
+          if(viewId === 'dashboard') tabs[0].classList.add('active');
+          if(viewId === 'recovery') tabs[1].classList.add('active');
+        }
+
+        app.currentView = viewId;
+
+        if (viewId === 'dashboard') {
+          app.renderIncidents();
+          app.updateKPIs();
+        } else if (viewId === 'recovery') {
+          app.renderRecoveries();
+        } else if (viewId === 'detail' && incId) {
+          app.renderDetail(incId);
+        } else if (viewId === 'form') {
+          document.getElementById('newIncidentForm').reset();
+          app.tempFiles = [];
+          document.getElementById('previewList').innerHTML = '';
+        }
+      },
+
+      // Dashboard
+      getBadgeClass: (status) => {
+        const m = { 'Mới': 'bg-red', 'Đang điều tra': 'bg-amber', 'Đã gán truy thu': 'bg-blue', 'Đã đóng': 'bg-green' };
+        return m[status] || 'bg-grey';
+      },
+      getBorderClass: (status) => {
+        const m = { 'Mới': 'ic-new', 'Đang điều tra': 'ic-investigating', 'Đã gán truy thu': 'ic-recovery', 'Đã đóng': 'ic-closed' };
+        return m[status] || '';
+      },
+
+      renderIncidents: () => {
+        const statusF = document.getElementById('filterStatus').value;
+        const projF = document.getElementById('filterProject').value;
+        const list = document.getElementById('incidentList');
+        
+        let filtered = db.incidents.filter(i => 
+          (!statusF || i.status === statusF) && (!projF || i.project === projF)
+        ).sort((a,b) => new Date(b.date) - new Date(a.date));
+
+        list.innerHTML = filtered.map(i => `
+          <div class="incident-card ${app.getBorderClass(i.status)}" onclick="app.switchView('detail', '${i.id}')">
+            <div class="ic-main">
+              <div class="ic-header">
+                <span class="ic-code">${i.id}</span>
+                <span class="badge bg-grey">${i.type}</span>
+                <span class="badge ${app.getBadgeClass(i.status)}">${i.status}</span>
+              </div>
+              <div class="ic-meta">
+                <span>Dự án: ${i.project}</span>
+                <span>Khâu: ${i.stage}</span>
+                <span>Ngày: ${utils.fmtDate(i.date)}</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; align-items:center">
+                <span class="ic-product">${i.product} (x${i.qty})</span>
+                <span class="ic-value">${utils.fmtVND(i.value)}</span>
+              </div>
+            </div>
+          </div>
+        `).join('') || '<div style="padding:24px; text-align:center; color:var(--grey)">Không có dữ liệu</div>';
+      },
+
+      updateKPIs: () => {
+        const total = db.incidents.length;
+        const inv = db.incidents.filter(i => i.status === 'Mới' || i.status === 'Đang điều tra').length;
+        
+        let rcv = 0, pend = 0;
+        db.recoveries.forEach(r => {
+          if(r.status === 'Đã thu') rcv += Number(r.amount);
+          if(r.status === 'Chờ thu') pend += Number(r.amount);
+        });
+
+        // Tỷ lệ bể vỡ: giả định ~10,000 đơn/tháng cho dự án B2B
+        const assumedMonthlyOrders = 10000;
+        const thisMonthInc = db.incidents.filter(i => {
+          const d = new Date(i.date);
+          const now = new Date();
+          return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+        }).length;
+        const rate = ((thisMonthInc / assumedMonthlyOrders) * 100).toFixed(2);
+
+        document.getElementById('kpiTotal').innerText = total;
+        document.getElementById('kpiInvestigating').innerText = inv;
+        document.getElementById('kpiRecovered').innerText = utils.fmtVND(rcv);
+        document.getElementById('kpiPending').innerText = utils.fmtVND(pend);
+        document.getElementById('kpiRate').innerText = rate + '%';
+      },
+
+      renderChart: () => {
+        const ctx = document.getElementById('breakageChart').getContext('2d');
+        if(app.chartInstance) app.chartInstance.destroy();
+        app.chartInstance = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: ['Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6', 'Tháng 7', 'Tháng 8'],
+            datasets: [{
+              label: 'Số lượng sự cố',
+              data: [12, 19, 15, 8, 10, db.incidents.length],
+              backgroundColor: 'rgba(12, 143, 138, 0.8)',
+              borderRadius: 4
+            }]
+          },
+          options: {
+            responsive: true,
+            scales: { y: { beginAtZero: true } }
+          }
+        });
+      },
+
+      // Form
+      setupDragDrop: () => {
+        const zone = document.getElementById('uploadZone');
+        zone.addEventListener('dragover', (e) => { e.preventDefault(); zone.classList.add('dragover'); });
+        zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+        zone.addEventListener('drop', (e) => {
+          e.preventDefault();
+          zone.classList.remove('dragover');
+          app.handleFiles(e.dataTransfer.files);
+        });
+      },
+      
+      handleFiles: (files) => {
+        const list = document.getElementById('previewList');
+        Array.from(files).forEach(file => {
+          if(!file.type.startsWith('image/')) return;
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            app.tempFiles.push(e.target.result);
+            list.innerHTML += `<img src="${e.target.result}" class="preview-item">`;
+          };
+          reader.readAsDataURL(file);
+        });
+      },
+
+      submitIncident: (e) => {
+        e.preventDefault();
+        const fd = new FormData(e.target);
+        const inc = {
+          id: utils.genCode('INC', db.incidents),
+          tracking: fd.get('tracking'),
+          project: fd.get('project'),
+          type: fd.get('type'),
+          stage: fd.get('stage'),
+          product: fd.get('product'),
+          qty: fd.get('qty'),
+          value: fd.get('value'),
+          location: fd.get('location'),
+          desc: fd.get('description'),
+          status: 'Mới',
+          date: new Date().toISOString(),
+          images: app.tempFiles
+        };
+        db.incidents.push(inc);
+        db.save();
+        utils.toast('Đã tạo báo cáo sự cố ' + inc.id);
+        app.switchView('dashboard');
+      },
+
+      // Detail
+      renderDetail: (id) => {
+        const inc = db.incidents.find(i => i.id === id);
+        if(!inc) return;
+        app.currentIncident = inc;
+
+        document.getElementById('detailCode').innerText = inc.id;
+        document.getElementById('dTitle').innerText = `${inc.product} (x${inc.qty})`;
+        document.getElementById('dMeta').innerHTML = `
+          <span>Tracking: ${inc.tracking}</span>
+          <span>Dự án: ${inc.project}</span>
+          <span>Vị trí: ${inc.location}</span>
+          <span class="ic-value">${utils.fmtVND(inc.value)}</span>
+        `;
+        document.getElementById('dStatusBadge').innerHTML = `<span class="badge ${app.getBadgeClass(inc.status)}">${inc.status}</span>`;
+        document.getElementById('dDesc').innerText = inc.desc;
+        
+        document.getElementById('dEvidence').innerHTML = (inc.images || []).length > 0 
+          ? inc.images.map(img => `<img src="${img}" class="evidence-img">`).join('') 
+          : '<span style="color:var(--grey);font-style:italic">Chưa có ảnh chứng cứ — upload ảnh khi tạo sự cố mới</span>';
+
+        // Dynamic timeline
+        let timelineHTML = '';
+        timelineHTML += `<div class="timeline-item"><div style="font-weight:500">📋 Báo cáo sự cố được tạo</div><div style="font-size:12px;color:var(--grey)">${utils.fmtDate(inc.date)} — Loại: ${inc.type} | Khâu: ${inc.stage}</div></div>`;
+        
+        if(inc.status !== 'Mới') {
+          timelineHTML += `<div class="timeline-item"><div style="font-weight:500">🔍 Bắt đầu điều tra</div><div style="font-size:12px;color:var(--grey)">Nguyên nhân: ${inc.cause || 'Đang xác định'}</div></div>`;
+        }
+        const incRcvs = db.recoveries.filter(r => r.incId === inc.id);
+        incRcvs.forEach(r => {
+          timelineHTML += `<div class="timeline-item"><div style="font-weight:500">💰 Gán truy thu: ${r.assignee}</div><div style="font-size:12px;color:var(--grey)">${utils.fmtDate(r.date)} — ${utils.fmtVND(r.amount)} — <span class="badge ${r.status==='Đã thu'?'bg-green':r.status==='Hủy'?'bg-grey':'bg-amber'}">${r.status}</span></div></div>`;
+        });
+        if(inc.status === 'Đã đóng') {
+          timelineHTML += `<div class="timeline-item"><div style="font-weight:500">✅ Case đã đóng</div><div style="font-size:12px;color:var(--grey)">Đã hoàn tất xử lý</div></div>`;
+        }
+        document.getElementById('dTimeline').innerHTML = timelineHTML;
+
+        // Show existing recoveries in panel
+        const rcvSection = document.getElementById('existingRecoveries');
+        if(incRcvs.length > 0) {
+          rcvSection.innerHTML = `<h4 style="font-size:13px;margin-bottom:8px;color:var(--navy)">Truy thu đã gán (${incRcvs.length})</h4>` +
+            incRcvs.map(r => `<div style="background:var(--soft);border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin-bottom:6px;font-size:12px">
+              <div style="display:flex;justify-content:space-between"><strong>${r.assignee}</strong><span class="badge ${r.status==='Đã thu'?'bg-green':r.status==='Hủy'?'bg-grey':'bg-amber'}">${r.status}</span></div>
+              <div style="color:var(--red);font-weight:600">${utils.fmtVND(r.amount)}</div>
+            </div>`).join('');
+        } else {
+          rcvSection.innerHTML = '';
+        }
+
+        // Set radio if has cause
+        document.querySelectorAll('input[name="rcause"]').forEach(r => r.checked = (r.value === inc.cause));
+        
+        app.renderComments();
+      },
+
+      calcRcvVal: () => {
+        if(!app.currentIncident) return;
+        const p = document.getElementById('rcvPercent').value || 0;
+        const val = (app.currentIncident.value * p) / 100;
+        document.getElementById('rcvCalcVal').innerText = utils.fmtVND(val);
+      },
+
+      assignRecovery: () => {
+        if(!app.currentIncident) return;
+        const cause = document.querySelector('input[name="rcause"]:checked')?.value;
+        const assignee = document.getElementById('rcvAssignee').value;
+        const type = document.getElementById('rcvType').value;
+        const pct = document.getElementById('rcvPercent').value;
+        
+        if(!cause || !assignee || !pct) {
+          alert('Vui lòng điền đủ nguyên nhân, người chịu trách nhiệm và % truy thu');
+          return;
+        }
+
+        const amt = (app.currentIncident.value * pct) / 100;
+        
+        // Update inc
+        app.currentIncident.cause = cause;
+        app.currentIncident.status = 'Đã gán truy thu';
+        
+        // Create rcv
+        const rcv = {
+          id: utils.genCode('RCV', db.recoveries),
+          incId: app.currentIncident.id,
+          assignee, type, amount: amt, status: 'Chờ thu', date: new Date().toISOString()
+        };
+        db.recoveries.push(rcv);
+        db.save();
+
+        utils.toast(`Đã gán truy thu ${utils.fmtVND(amt)} cho ${assignee}`);
+        app.renderDetail(app.currentIncident.id);
+      },
+
+      renderComments: () => {
+        const list = document.getElementById('commentList');
+        const cmts = db.comments.filter(c => c.incId === app.currentIncident.id);
+        list.innerHTML = cmts.map(c => `
+          <div class="comment">
+            <div class="comment-header"><span>${c.user}</span><span>${utils.fmtDate(c.date)}</span></div>
+            <div>${c.text}</div>
+          </div>
+        `).join('');
+      },
+
+      addComment: () => {
+        const inp = document.getElementById('newComment');
+        if(!inp.value.trim() || !app.currentIncident) return;
+        
+        db.comments.push({
+          incId: app.currentIncident.id,
+          user: utils.getUser().name,
+          text: inp.value.trim(),
+          date: new Date().toISOString()
+        });
+        db.save();
+        inp.value = '';
+        app.renderComments();
+      },
+
+      // Recovery
+      updateRecoveryKPIs: () => {
+        const total = db.recoveries.reduce((s,r) => s + Number(r.amount), 0);
+        const collected = db.recoveries.filter(r => r.status === 'Đã thu').reduce((s,r) => s + Number(r.amount), 0);
+        const pending = db.recoveries.filter(r => r.status === 'Chờ thu').reduce((s,r) => s + Number(r.amount), 0);
+        const rate = total > 0 ? Math.round((collected / total) * 100) : 0;
+        document.getElementById('rKpiTotal').innerText = utils.fmtVND(total);
+        document.getElementById('rKpiCollected').innerText = utils.fmtVND(collected);
+        document.getElementById('rKpiPending').innerText = utils.fmtVND(pending);
+        document.getElementById('rKpiRate').innerText = rate + '%';
+      },
+
+      renderRecoveries: () => {
+        app.updateRecoveryKPIs();
+        const stat = document.getElementById('rFilterStatus').value;
+        const typeF = document.getElementById('rFilterType').value;
+        const tb = document.getElementById('recoveryTableBody');
+        
+        let filtered = db.recoveries;
+        if(stat) filtered = filtered.filter(r => r.status === stat);
+        if(typeF) filtered = filtered.filter(r => r.type === typeF);
+
+        tb.innerHTML = filtered.map(r => `
+          <tr>
+            <td style="font-weight:500">${r.id}</td>
+            <td><a href="#" onclick="app.switchView('detail','${r.incId}')" style="color:var(--teal)">${r.incId}</a></td>
+            <td>${r.assignee}</td>
+            <td><span class="badge bg-grey">${r.type}</span></td>
+            <td style="color:var(--red); font-weight:600">${utils.fmtVND(r.amount)}</td>
+            <td>
+              <select class="form-control" style="padding:4px" onchange="app.updateRcvStatus('${r.id}', this.value)">
+                <option value="Chờ thu" ${r.status==='Chờ thu'?'selected':''}>Chờ thu</option>
+                <option value="Đã thu" ${r.status==='Đã thu'?'selected':''}>Đã thu</option>
+                <option value="Hủy" ${r.status==='Hủy'?'selected':''}>Hủy</option>
+              </select>
+            </td>
+            <td><button class="btn btn-text">Chi tiết</button></td>
+          </tr>
+        `).join('') || '<tr><td colspan="7" style="text-align:center">Không có dữ liệu</td></tr>';
+      },
+
+      updateRcvStatus: (id, stat) => {
+        const r = db.recoveries.find(x => x.id === id);
+        if(r) {
+          r.status = stat;
+          db.save();
+          utils.toast(`Đã cập nhật trạng thái ${id} thành ${stat}`);
+          app.updateKPIs();
+        }
+      },
+
+      exportExcel: () => {
+        const ws = XLSX.utils.json_to_sheet(db.recoveries.map(r => ({
+          'Mã RCV': r.id,
+          'Mã Sự cố': r.incId,
+          'Đối tượng': r.assignee,
+          'Loại': r.type,
+          'Số tiền (VNĐ)': r.amount,
+          'Trạng thái': r.status,
+          'Ngày tạo': utils.fmtDate(r.date)
+        })));
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Truy Thu");
+        XLSX.writeFile(wb, "rillnet_truythu.xlsx");
+      }
+    };
+
+    // Run
+    window.onload = app.init;
+  </script>
+</body>
+</html>
