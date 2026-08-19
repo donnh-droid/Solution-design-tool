@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LogiClaim B2B — Hệ thống Quản lý Bể vỡ & Truy thu Logistics</title>
+  
+  <!-- Fonts & Icons & Libraries -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --primary-soft: #eff6ff;
+      --secondary: #0f172a;
+      
+      --accent-teal: #0d9488;
+      --accent-teal-soft: #ccfbf1;
+      
+      --danger: #dc2626;
+      --danger-soft: #fef2f2;
+      --danger-border: #fecaca;
+      
+      --warning: #d97706;
+      --warning-soft: #fffbeb;
+      --warning-border: #fde68a;
+      
+      --success: #16a34a;
+      --success-soft: #f0fdf4;
+      --success-border: #bbf7d0;
+      
+      --neutral-50: #f8fafc;
+      --neutral-100: #f1f5f9;
+      --neutral-200: #e2e8f0;
+      --neutral-300: #cbd5e1;
+      --neutral-400: #94a3b8;
+      --neutral-600: #475569;
+      --neutral-700: #334155;
+      --neutral-800: #1e293b;
+      --neutral-900: #0f172a;
+
+      --card-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05), 0 2px 6px -1px rgba(15, 23, 42, 0.03);
+      --radius-lg: 16px;
+      --radius-md: 12px;
+      --radius-sm: 8px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #f6f8fa;
+      color: var(--neutral-800);
+      font-size: 14px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Header Navigation */
+    .navbar {
+      background: #ffffff;
+      border-bottom: 1px solid var(--neutral-200);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      padding: 0 28px;
+      height: 68px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+    }
+
+    .brand-icon {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, #1e40af, #2563eb);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-weight: 800;
+      font-size: 20px;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+    }
+
+    .brand-text h1 {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--neutral-900);
+      letter-spacing: -0.4px;
+    }
+
+    .brand-text p {
+      font-size: 11px;
+      color: var(--neutral-400);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 6px;
+      background: var(--neutral-100);
+      padding: 5px;
+      border-radius: 99px;
+    }
+
+    .nav-btn {
+      border: 0;
+      background: transparent;
+      padding: 8px 18px;
+      border-radius: 99px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--neutral-600);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .nav-btn:hover { color: var(--primary); }
+    .nav-btn.active {
+      background: #ffffff;
+      color: var(--primary);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+
+    .user-badge {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--neutral-50);
+      padding: 6px 14px 6px 8px;
+      border-radius: 99px;
+      border: 1px solid var(--neutral-200);
+    }
+
+    .avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: #fff;
+      font-weight: 700;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Container Layout */
+    .container {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 28px;
+    }
+
+    .page-title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-bottom: 24px;
+    }
+
+    .page-title h2 {
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--neutral-900);
+      letter-spacing: -0.5px;
+    }
+
+    .page-title p {
+      color: var(--neutral-600);
+      font-size: 13.5px;
+      margin-top: 2px;
+    }
+
+    /* Button System */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 18px;
+      border-radius: var(--radius-md);
+      font-weight: 700;
+      font-size: 13.5px;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.2s;
+      text-decoration: none;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+    }
+    .btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); }
+
+    .btn-secondary {
+      background: #ffffff;
+      border-color: var(--neutral-200);
+      color: var(--neutral-700);
+    }
+    .btn-secondary:hover { background: var(--neutral-50); border-color: var(--neutral-300); }
+
+    /* KPI Metrics Grid */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .kpi-card {
+      background: #ffffff;
+      border: 1px solid var(--neutral-200);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      box-shadow: var(--card-shadow);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .kpi-card::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 4px;
+      background: var(--neutral-300);
+    }
+
+    .kpi-card.kpi-blue::before { background: var(--primary); }
+    .kpi-card.kpi-warning::before { background: var(--warning); }
+    .kpi-card.kpi-danger::before { background: var(--danger); }
+    .kpi-card.kpi-success::before { background: var(--success); }
+    .kpi-card.kpi-teal::before { background: var(--accent-teal); }
+
+    .kpi-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--neutral-400);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+    }
+
+    .kpi-val {
+      font-size: 26px;
+      font-weight: 800;
+      color: var(--neutral-900);
+      letter-spacing: -0.5px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .kpi-sub {
+      font-size: 11.5px;
+      color: var(--neutral-600);
+      margin-top: 6px;
+      font-weight: 500;
+    }
+
+    /* Views */
+    .view-section { display: none; }
+    .view-section.active { display: block; animation: fadeIn 0.25s ease-out; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Grid Layouts */
+    .content-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 24px;
+    }
+
+    /* Cards & Panels */
+    .panel-card {
+      background: #ffffff;
+      border: 1px solid var(--neutral-200);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      box-shadow: var(--card-shadow);
+      margin-bottom: 24px;
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 18px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--neutral-100);
+    }
+
+    .panel-title {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--neutral-900);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* Incident List Cards */
+    .incident-list { display: flex; flex-direction: column; gap: 14px; }
+
+    .incident-item {
+      background: #ffffff;
+      border: 1px solid var(--neutral-200);
+      border-left: 5px solid var(--neutral-300);
+      border-radius: var(--radius-md);
+      padding: 18px;
+      transition: all 0.2s ease;
+      cursor: pointer;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
+
+    .incident-item:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+      border-color: var(--neutral-300);
+    }
+
+    .incident-item.st-new { border-left-color: var(--danger); }
+    .incident-item.st-investigating { border-left-color: var(--warning); }
+    .incident-item.st-assigned { border-left-color: var(--primary); }
+    .incident-item.st-closed { border-left-color: var(--success); }
+
+    .inc-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .inc-code {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--primary);
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 10px;
+      border-radius: 99px;
+      font-size: 11.5px;
+      font-weight: 700;
+    }
+
+    .badge-danger { background: var(--danger-soft); color: var(--danger); border: 1px solid var(--danger-border); }
+    .badge-warning { background: var(--warning-soft); color: var(--warning); border: 1px solid var(--warning-border); }
+    .badge-primary { background: var(--primary-soft); color: var(--primary); border: 1px solid #bfdbfe; }
+    .badge-success { background: var(--success-soft); color: var(--success); border: 1px solid var(--success-border); }
+    .badge-neutral { background: var(--neutral-100); color: var(--neutral-600); border: 1px solid var(--neutral-200); }
+
+    .inc-body { margin-bottom: 10px; }
+    .inc-product { font-size: 15px; font-weight: 700; color: var(--neutral-900); }
+    .inc-desc { font-size: 13px; color: var(--neutral-600); margin-top: 4px; line-clamp: 2; display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden; }
+
+    .inc-meta {
+      display: flex;
+      gap: 18px;
+      font-size: 12.5px;
+      color: var(--neutral-400);
+      border-top: 1px dashed var(--neutral-200);
+      padding-top: 10px;
+      margin-top: 10px;
+    }
+
+    .inc-meta span b { color: var(--neutral-700); }
+    .inc-val { margin-left: auto; font-family: 'JetBrains Mono', monospace; font-weight: 800; color: var(--danger); font-size: 14px; }
+
+    /* Tables */
+    .table-wrapper {
+      overflow-x: auto;
+      border: 1px solid var(--neutral-200);
+      border-radius: var(--radius-md);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 13.5px;
+    }
+
+    th {
+      background: var(--neutral-50);
+      color: var(--neutral-600);
+      font-weight: 700;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--neutral-200);
+    }
+
+    td {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--neutral-200);
+      color: var(--neutral-700);
+    }
+
+    tr:last-child td { border-bottom: 0; }
+    tr:hover td { background: var(--neutral-50); }
+
+    /* Forms */
+    .form-group {
+      margin-bottom: 18px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--neutral-700);
+      margin-bottom: 6px;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid var(--neutral-200);
+      border-radius: var(--radius-sm);
+      font-family: inherit;
+      font-size: 13.5px;
+      color: var(--neutral-800);
+      background: #ffffff;
+      transition: all 0.2s;
+    }
+
+    .form-control:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    }
+
+    /* Workflow Diagram Interactive Step Cards */
+    .sop-flow {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .sop-step {
+      background: #ffffff;
+      border: 1px solid var(--neutral-200);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      position: relative;
+    }
+
+    .sop-step-num {
+      width: 26px;
+      height: 26px;
+      background: var(--primary-soft);
+      color: var(--primary);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 12px;
+      margin-bottom: 10px;
+    }
+
+    .sop-step h4 { font-size: 13.5px; font-weight: 800; color: var(--neutral-900); margin-bottom: 4px; }
+    .sop-step p { font-size: 11.5px; color: var(--neutral-600); line-height: 1.4; }
+
+    /* Timeline */
+    .timeline {
+      position: relative;
+      padding-left: 24px;
+      margin-top: 14px;
+    }
+
+    .timeline::before {
+      content: "";
+      position: absolute;
+      left: 7px;
+      top: 4px;
+      bottom: 4px;
+      width: 2px;
+      background: var(--neutral-200);
+    }
+
+    .timeline-event {
+      position: relative;
+      margin-bottom: 18px;
+    }
+
+    .timeline-event::before {
+      content: "";
+      position: absolute;
+      left: -24px;
+      top: 5px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--primary);
+      border: 2px solid #ffffff;
+      box-shadow: 0 0 0 2px var(--primary-soft);
+    }
+
+    .timeline-time { font-size: 11px; color: var(--neutral-400); font-weight: 600; }
+    .timeline-title { font-size: 13.5px; font-weight: 700; color: var(--neutral-800); }
+    .timeline-desc { font-size: 12px; color: var(--neutral-600); }
+
+    /* Market Benchmark Comparison Box */
+    .market-box {
+      background: linear-gradient(135deg, #0f172a, #1e293b);
+      color: #ffffff;
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+
+    .market-box h3 { font-size: 18px; font-weight: 800; margin-bottom: 14px; color: #ffffff; }
+
+    /* Toast Container */
+    .toast-box {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 1000;
+    }
+    .toast-msg {
+      background: var(--neutral-900);
+      color: #fff;
+      padding: 12px 20px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+      animation: slideIn 0.3s ease;
+    }
+    @keyframes slideIn { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation Bar -->
+  <header class="navbar">
+    <a href="#" class="brand">
+      <div class="brand-icon">🛡️</div>
+      <div class="brand-text">
+        <h1>LogiClaim B2B</h1>
+        <p>Breakage & Recovery Management Portal</p>
+      </div>
+    </a>
+
+    <nav class="nav-links">
+      <button class="nav-btn active" onclick="switchTab('dashboard')">📊 Tổng quan Bể vỡ</button>
+      <button class="nav-btn" onclick="switchTab('sop')">📖 Quy trình Chuẩn (SOP)</button>
+      <button class="nav-btn" onclick="switchTab('recovery')">💰 Quản lý Truy thu</button>
+      <button class="nav-btn" onclick="switchTab('market')">🔍 Benchmark Thị trường</button>
+    </nav>
+
+    <div class="user-badge">
+      <div class="avatar">AD</div>
+      <div>
+        <div style="font-weight: 700; font-size: 12.5px; color: var(--neutral-800);">Điều phối viên B2B</div>
+        <div style="font-size: 10.5px; color: var(--neutral-400);">Khu vực Miền Bắc</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="container">
+
+    <!-- TAB 1: DASHBOARD & MANAGEMENT -->
+    <section id="tab-dashboard" class="view-section active">
+      <div class="page-title-row">
+        <div class="page-title">
+          <h2>Quản lý Bể vỡ & Sự cố B2B</h2>
+          <p>Tracking nguồn gốc phát sinh sự cố, điều tra trách nhiệm và phân bổ truy thu đền bù</p>
+        </div>
+        <button class="btn btn-primary" onclick="openNewIncidentForm()">+ Khai báo sự cố mới</button>
+      </div>
+
+      <!-- KPI Metrics -->
+      <div class="kpi-grid">
+        <div class="kpi-card kpi-blue">
+          <div class="kpi-label">Tổng sự cố tháng</div>
+          <div class="kpi-val" id="kpiTotalInc">8</div>
+          <div class="kpi-sub">Dự án WinMart & BHX</div>
+        </div>
+
+        <div class="kpi-card kpi-warning">
+          <div class="kpi-label">Đang điều tra</div>
+          <div class="kpi-val" id="kpiInvInc" style="color: var(--warning)">3</div>
+          <div class="kpi-sub">Cần xác minh CCTV / POD</div>
+        </div>
+
+        <div class="kpi-card kpi-danger">
+          <div class="kpi-label">Tổng thiệt hại ước tính</div>
+          <div class="kpi-val" id="kpiTotalLoss" style="color: var(--danger)">7.08M</div>
+          <div class="kpi-sub">VNĐ (Đã chứng thực)</div>
+        </div>
+
+        <div class="kpi-card kpi-success">
+          <div class="kpi-label">Đã truy thu thành công</div>
+          <div class="kpi-val" id="kpiRecoveredVal" style="color: var(--success)">2.65M</div>
+          <div class="kpi-sub">Đã trừ lương/ví tài xế & kho</div>
+        </div>
+
+        <div class="kpi-card kpi-teal">
+          <div class="kpi-label">Tỷ lệ bể vỡ (Damage Rate)</div>
+          <div class="kpi-val" style="color: var(--accent-teal)">0.08%</div>
+          <div class="kpi-sub">Mục tiêu SLA B2B: &lt; 0.1%</div>
+        </div>
+      </div>
+
+      <!-- Content Grid: Left List + Right Detail/Form Panel -->
+      <div class="content-grid">
+        <!-- Left: Incident List -->
+        <div>
+          <div class="panel-card" style="padding: 16px 20px;">
+            <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+              <select class="form-control" id="filterStatus" onchange="renderIncidents()" style="max-width: 180px;">
+                <option value="">Tất cả trạng thái</option>
+                <option value="Mới">🔴 Mới phát hiện</option>
+                <option value="Đang điều tra">🟡 Đang điều tra</option>
+                <option value="Đã gán truy thu">🔵 Đã gán truy thu</option>
+                <option value="Đã đóng">🟢 Đã đóng case</option>
+              </select>
+
+              <select class="form-control" id="filterStage" onchange="renderIncidents()" style="max-width: 180px;">
+                <option value="">Tất cả khâu phát sinh</option>
+                <option value="Linehaul">Vận chuyển Linehaul</option>
+                <option value="Sorting">Phân loại tại Hub</option>
+                <option value="Giao hàng">Giao chặng cuối (Last-mile)</option>
+                <option value="Nhập kho">Nhập kho FFM</option>
+              </select>
+
+              <div style="margin-left: auto; font-size: 12.5px; color: var(--neutral-400); font-weight: 600;">
+                Hiển thị <span id="incCount" style="color: var(--neutral-800)">8</span> sự cố
+              </div>
+            </div>
+          </div>
+
+          <div class="incident-list" id="incidentContainer">
+            <!-- Dynamic Rendered List -->
+          </div>
+        </div>
+
+        <!-- Right Panel: Dynamic Detail View or Form -->
+        <div>
+          <!-- Panel: Dynamic Incident Detail -->
+          <div class="panel-card" id="detailPanel">
+            <div class="panel-header">
+              <div class="panel-title">🔍 Chi tiết Điều tra & Tracking</div>
+              <span class="badge badge-primary" id="detCode">INC-2026-0001</span>
+            </div>
+
+            <div id="detailContent">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- TAB 2: SOP WORKFLOW & 5-STEP PROCESS -->
+    <section id="tab-sop" class="view-section">
+      <div class="page-title-row">
+        <div class="page-title">
+          <h2>Quy trình Chuẩn 5 Bước: Bể vỡ & Truy thu B2B</h2>
+          <p>SOP vận hành chi tiết từ lúc ghi nhận sự cố đến thu hồi tài chính</p>
+        </div>
+      </div>
+
+      <!-- SOP Flowchart Steps -->
+      <div class="sop-flow">
+        <div class="sop-step">
+          <div class="sop-step-num">1</div>
+          <h4>Phát hiện & FNOL</h4>
+          <p>Tài xế/Kho đồng kiểm (co-inspection). Lập <b>Biên bản bất thường</b> & chụp 6 mặt ảnh chứng cứ trên App Mobile ePOD.</p>
+        </div>
+
+        <div class="sop-step">
+          <div class="sop-step-num">2</div>
+          <h4>Thu thập chứng cứ</h4>
+          <p>Yêu cầu ảnh đóng gói, tem vận chuyển, video unboxing & Hóa đơn tài chính (VAT Invoice) xác minh giá trị thực.</p>
+        </div>
+
+        <div class="sop-step">
+          <div class="sop-step-num">3</div>
+          <h4>Điều tra Nguồn gốc</h4>
+          <p>So sánh log quét mã vạch (chain-of-custody), kiểm tra CCTV băng chuyền Hub, check tiêu chuẩn đóng gói ISTA.</p>
+        </div>
+
+        <div class="sop-step">
+          <div class="sop-step-num">4</div>
+          <h4>Xác định Trách nhiệm</h4>
+          <p>Phân loại lỗi: Tài xế phanh gấp / Kho làm rơi / Xe dột nước / Shipper đóng gói kém. Tính mức đền bù & gán truy thu.</p>
+        </div>
+
+        <div class="sop-step">
+          <div class="sop-step-num">5</div>
+          <h4>Đối soát & Quyết toán</h4>
+          <p>Trừ trực tiếp vào Kỳ đối soát COD, Bảng lương tài xế hoặc Hóa đơn điều chỉnh công nợ (Credit Note) với khách B2B.</p>
+        </div>
+      </div>
+
+      <!-- Detailed Breakdown Matrix -->
+      <div class="panel-card">
+        <div class="panel-header">
+          <div class="panel-title">📋 Ma trận Trách nhiệm & Mức Bồi thường Chuẩn B2B</div>
+        </div>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Khâu phát sinh sự cố</th>
+                <th>Nguyên nhân phổ biến</th>
+                <th>Bên chịu trách nhiệm</th>
+                <th>Mức truy thu / Bồi thường</th>
+                <th>Chứng cứ bắt buộc</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><b>1. Nhập kho / Sorting tại Hub</b></td>
+                <td>Rơi từ băng chuyền, xếp chồng quá tải, xe nâng làm móp thùng</td>
+                <td><span class="badge badge-warning">Nhân viên / Team Kho</span></td>
+                <td>100% Giá trị thực tế (trừ lương / quỹ thưởng ca)</td>
+                <td>CCTV Hub + Biên bản bàn giao ca</td>
+              </tr>
+              <tr>
+                <td><b>2. Vận chuyển Linehaul</b></td>
+                <td>Xe bị dột nước mưa, va đập chặng đường dài, lật thùng xe</td>
+                <td><span class="badge badge-primary">Nhà xe / Đội xe xe tải</span></td>
+                <td>100% Giá trị hóa đơn + Khấu trừ cước xe</td>
+                <td>Ảnh bạt xe, biên bản sự cố đường bộ</td>
+              </tr>
+              <tr>
+                <td><b>3. Giao hàng Chặng cuối (Last-mile)</b></td>
+                <td>Tài xế phanh gấp, làm rơi khi bốc xếp, giao thiếu thùng</td>
+                <td><span class="badge badge-danger">Tài xế Giao hàng</span></td>
+                <td>100% Giá trị (Trừ ví / Trừ bảng công nợ lương)</td>
+                <td>ePOD có chữ ký đồng kiểm của Khách</td>
+              </tr>
+              <tr>
+                <td><b>4. Đóng gói từ Khách hàng (Shipper)</b></td>
+                <td>Không quấn chèn bọt khí, thùng carton quá mỏng không đạt chuẩn</td>
+                <td><span class="badge badge-neutral">Miễn trách nhiệm (Shipper chịu)</span></td>
+                <td>Từ chối bồi thường (Theo Điều 42 Luật Bưu chính)</td>
+                <td>Ảnh test lực đè & thùng carton nguyên vẹn</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 3: RECOVERY MANAGEMENT -->
+    <section id="tab-recovery" class="view-section">
+      <div class="page-title-row">
+        <div class="page-title">
+          <h2>Quản lý & Bảng kê Truy thu Đền bù</h2>
+          <p>Theo dõi tiến độ cấn trừ công nợ, khấu trừ lương và đối soát tiền bồi thường</p>
+        </div>
+        <button class="btn btn-secondary" onclick="exportToExcel()">📥 Xuất Bảng kê Excel</button>
+      </div>
+
+      <div class="panel-card">
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Mã Truy Thu (RCV)</th>
+                <th>Mã Sự Cố</th>
+                <th>Đối Tượng Truy Thu</th>
+                <th>Phân Loại</th>
+                <th>Số Tiền Đền Bù</th>
+                <th>Hình Thức Khấu Trừ</th>
+                <th>Trạng Thái</th>
+                <th>Ngày Quyết Toán</th>
+              </tr>
+            </thead>
+            <tbody id="recoveryTableBody">
+              <!-- Rendered via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 4: MARKET BENCHMARK -->
+    <section id="tab-market" class="view-section">
+      <div class="market-box">
+        <h3>🔍 Phân tích Nghiên cứu Thị trường Logistics B2B Việt Nam</h3>
+        <p style="color: #94a3b8; font-size: 14px;">Báo cáo so sánh chính sách xử lý bể vỡ & bồi thường của các đơn vị logistics lớn (GHN, GHTK, Ahamove, Lalamove, J&T, Ninja Van)</p>
+      </div>
+
+      <div class="panel-card">
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Đơn vị Logistics</th>
+                <th>Thời hạn khiếu nại</th>
+                <th>Hạn mức không khai giá</th>
+                <th>Hạn mức có khai giá / Bảo hiểm</th>
+                <th>Cơ chế Quyết toán B2B</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><b>GHN (Giao Hàng Nhanh)</b></td>
+                <td>Hư hỏng: 01 tháng<br>Mất hàng: 06 tháng</td>
+                <td>4x cước phí vận chuyển (Theo Luật Bưu chính)</td>
+                <td>100% Hóa đơn VAT (Tối đa 20M - 50M VNĐ/đơn)</td>
+                <td>Cấn trừ công nợ hóa đơn vận chuyển tháng</td>
+              </tr>
+              <tr>
+                <td><b>GHTK (Giao Hàng Tiết Kiệm)</b></td>
+                <td>Hư hỏng: 01 tháng<br>Mất hàng: 06 tháng</td>
+                <td>4x cước phí vận chuyển</td>
+                <td>100% Giá trị khai báo (Cap 20M VNĐ)</td>
+                <td>Trừ trực tiếp trong Kỳ đối soát COD định kỳ</td>
+              </tr>
+              <tr>
+                <td><b>Ahamove (On-demand B2B)</b></td>
+                <td>24h - 7 ngày từ khi giao hàng</td>
+                <td>Xe máy: Max 3M VNĐ<br>Xe tải: Max 10M VNĐ</td>
+                <td>Khai giá: Tối đa 100M VNĐ (Phí bảo hiểm ~0.5%)</td>
+                <td>Khấu trừ trực tiếp vào Ví tài xế hoặc Credit Note</td>
+              </tr>
+              <tr>
+                <td><b>Lalamove</b></td>
+                <td>07 ngày đối với hợp đồng Doanh nghiệp</td>
+                <td>Cap 3M (Xe 2 bánh) / 5M (Xe 4 bánh)</td>
+                <td>Gói B2B Cargo Protection Scheme</td>
+                <td>Cấn trừ sao kê tháng (30-60 ngày)</td>
+              </tr>
+              <tr>
+                <td><b>J&T Express</b></td>
+                <td>Hư hỏng: 01 tháng<br>Mất hàng: 06 tháng</td>
+                <td>4x cước phí vận chuyển</td>
+                <td>100% Hóa đơn thương mại (Max 30M VNĐ)</td>
+                <td>Biên bản cấn trừ công nợ hàng tháng</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Modal / Toast Container -->
+  <div class="toast-box" id="toastContainer"></div>
+
+  <!-- JavaScript App Engine -->
+  <script>
+    // System Master Data
+    const AppData = {
+      incidents: [
+        { id: 'INC-2026-0001', orderCode: 'WMT-88912', project: 'WinMart', type: 'Hư hỏng', stage: 'Giao hàng', product: 'Nước mắm Chinsu Nam Ngư (Chai thủy tinh)', qty: 24, val: 1200000, loc: 'WinMart Việt Trì', desc: 'Bể vỡ 4 chai thủy tinh gây chảy tràn ướt 20 chai còn lại trong màng bọc. Lỗi do tài xế phanh gấp.', status: 'Đã gán truy thu', date: '2026-08-15 10:30', cause: 'Lỗi tài xế' },
+        { id: 'INC-2026-0002', orderCode: 'BHX-99211', project: 'Bách Hóa Xanh', type: 'Mất hàng', stage: 'Linehaul', product: 'Sữa tươi Vinamilk 1L (Thùng 12 hộp)', qty: 5, val: 1750000, loc: 'Hub Linehaul Vĩnh Phúc', desc: 'Thiếu 5 thùng sữa khi bàn giao từ xe bạt Linehaul vào Hub. Rách niêm phong bạt.', status: 'Đang điều tra', date: '2026-08-16 14:15', cause: 'Lỗi vận chuyển' },
+        { id: 'INC-2026-0003', orderCode: 'WMT-88955', project: 'WinMart', type: 'Ướt-Bẩn', stage: 'Nhập kho', product: 'Gạo tẻ Hương Lài 5kg', qty: 10, val: 1800000, loc: 'Kho Tổng FFM Thanh Ba', desc: 'Mưa dột phần hiên nhập kho, ướt màng bọc 10 bao gạo.', status: 'Mới', date: '2026-08-18 09:00', cause: 'Lỗi kho' },
+        { id: 'INC-2026-0004', orderCode: 'GEN-11234', project: 'FMCG General', type: 'Hư hỏng', stage: 'Sorting', product: 'Quạt đứng Panasonic F-409', qty: 1, val: 2330000, loc: 'Hub Phân loại Mê Linh', desc: 'Rơi từ băng chuyền tự động cao 1.2m, vỡ lồng quạt.', status: 'Đã đóng', date: '2026-08-10 11:20', cause: 'Lỗi kho' }
+      ],
+      recoveries: [
+        { rcvId: 'RCV-2026-001', incId: 'INC-2026-0001', target: 'Nguyễn Văn Hùng (Tài xế xe tải)', type: 'Tài xế giao hàng', amount: 1200000, method: 'Trừ lương tháng 8', status: 'Đã quyết toán', date: '2026-08-16' },
+        { rcvId: 'RCV-2026-002', incId: 'INC-2026-0004', target: 'Team Ca 2 - Hub Mê Linh', type: 'Nhân viên Kho/Hub', amount: 2330000, method: 'Khấu trừ quỹ Ca', status: 'Đã quyết toán', date: '2026-08-12' },
+        { rcvId: 'RCV-2026-003', incId: 'INC-2026-0002', target: 'Nhà xe Hữu Nghị (Linehaul)', type: 'Nhà thầu Vận chuyển', amount: 1750000, method: 'Credit Note công nợ', status: 'Chờ quyết toán', date: '2026-08-17' }
+      ]
+    };
+
+    let selectedIncident = AppData.incidents[0];
+
+    // Navigation Switcher
+    function switchTab(tabId) {
+      document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active'));
+
+      event.currentTarget.classList.add('active');
+      document.getElementById(`tab-${tabId}`).classList.add('active');
+
+      if(tabId === 'recovery') renderRecoveries();
+    }
+
+    // Render Incident List
+    function renderIncidents() {
+      const container = document.getElementById('incidentContainer');
+      const statusF = document.getElementById('filterStatus').value;
+      const stageF = document.getElementById('filterStage').value;
+
+      let filtered = AppData.incidents.filter(item => {
+        return (!statusF || item.status === statusF) && (!stageF || item.stage === stageF);
+      });
+
+      document.getElementById('incCount').innerText = filtered.length;
+
+      container.innerHTML = filtered.map(item => {
+        let statusClass = item.status === 'Mới' ? 'st-new' :
+                          item.status === 'Đang điều tra' ? 'st-investigating' :
+                          item.status === 'Đã gán truy thu' ? 'st-assigned' : 'st-closed';
+
+        let badgeClass = item.status === 'Mới' ? 'badge-danger' :
+                         item.status === 'Đang điều tra' ? 'badge-warning' :
+                         item.status === 'Đã gán truy thu' ? 'badge-primary' : 'badge-success';
+
+        return `
+          <div class="incident-item ${statusClass}" onclick="selectIncident('${item.id}')">
+            <div class="inc-top">
+              <span class="inc-code">${item.id}</span>
+              <span class="badge ${badgeClass}">${item.status}</span>
+            </div>
+            <div class="inc-body">
+              <div class="inc-product">${item.product} (x${item.qty})</div>
+              <div class="inc-desc">${item.desc}</div>
+            </div>
+            <div class="inc-meta">
+              <span>Mã đơn: <b>${item.orderCode}</b></span>
+              <span>Khâu: <b>${item.stage}</b></span>
+              <span>Dự án: <b>${item.project}</b></span>
+              <div class="inc-val">${formatVND(item.val)}</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      if (filtered.length > 0) {
+        selectIncident(filtered[0].id);
+      }
+    }
+
+    // Select Incident for Detail Panel
+    function selectIncident(incId) {
+      const item = AppData.incidents.find(i => i.id === incId);
+      if(!item) return;
+      selectedIncident = item;
+
+      document.getElementById('detCode').innerText = item.id;
+
+      const detailContent = document.getElementById('detailContent');
+      detailContent.innerHTML = `
+        <div style="margin-bottom: 16px;">
+          <h3 style="font-size: 16px; font-weight: 800; color: var(--neutral-900);">${item.product}</h3>
+          <p style="font-size: 13px; color: var(--neutral-600); margin-top: 4px;">${item.desc}</p>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; background: var(--neutral-50); padding: 14px; border-radius: 10px; margin-bottom: 20px; border: 1px solid var(--neutral-200);">
+          <div><span style="color:var(--neutral-400); font-size:11px;">MÃ ĐƠN B2B:</span><br><b>${item.orderCode}</b></div>
+          <div><span style="color:var(--neutral-400); font-size:11px;">DỰ ÁN:</span><br><b>${item.project}</b></div>
+          <div><span style="color:var(--neutral-400); font-size:11px;">KHÂU PHÁT HIỆN:</span><br><b>${item.stage}</b></div>
+          <div><span style="color:var(--neutral-400); font-size:11px;">THIỆT HẠI:</span><br><b style="color:var(--danger)">${formatVND(item.val)}</b></div>
+        </div>
+
+        <!-- Investigation & Recovery Assignment Controls -->
+        <div style="border-top: 1px solid var(--neutral-200); padding-top: 16px;">
+          <h4 style="font-size: 14px; font-weight: 800; margin-bottom: 12px;">⚖️ Kết luận Nguyên nhân & Truy thu</h4>
+          
+          <div class="form-group">
+            <label class="form-label">Xác định Nguyên nhân gốc rễ (Root Cause)</label>
+            <select class="form-control" id="detCause">
+              <option value="Lỗi tài xế" ${item.cause==='Lỗi tài xế'?'selected':''}>👤 Lỗi tài xế (Phanh gấp / Va đập)</option>
+              <option value="Lỗi kho" ${item.cause==='Lỗi kho'?'selected':''}>🏭 Lỗi Nhân viên Kho / Sorting</option>
+              <option value="Lỗi vận chuyển" ${item.cause==='Lỗi vận chuyển'?'selected':''}>🚛 Lỗi Nhà thầu Vận chuyển Linehaul</option>
+              <option value="Lỗi đóng gói" ${item.cause==='Lỗi đóng gói'?'selected':''}>📦 Lỗi Đóng gói từ Shipper (Từ chối đền)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Đối tượng chịu truy thu đền bù</label>
+            <input type="text" class="form-control" id="detAssignee" placeholder="VD: Nguyễn Văn A (Tài xế xe tải 1.9T)" value="${item.status==='Đã gán truy thu'?'Nguyễn Văn Hùng (Tài xế)':''}">
+          </div>
+
+          <div style="display: flex; gap: 10px; margin-top: 20px;">
+            <button class="btn btn-primary" style="flex: 1;" onclick="saveRecoveryAssignment()">✅ Gán Truy thu & Tạo Phiếu RCV</button>
+          </div>
+        </div>
+
+        <!-- Tracking Timeline -->
+        <div style="border-top: 1px solid var(--neutral-200); padding-top: 16px; margin-top: 20px;">
+          <h4 style="font-size: 14px; font-weight: 800; margin-bottom: 10px;">🕒 Nhật ký Tracking Nguồn gốc</h4>
+          <div class="timeline">
+            <div class="timeline-event">
+              <div class="timeline-time">${item.date}</div>
+              <div class="timeline-title">Phát hiện sự cố tại ${item.loc}</div>
+              <div class="timeline-desc">Ghi nhận biên bản bất thường khâu ${item.stage}</div>
+            </div>
+            <div class="timeline-event">
+              <div class="timeline-time">Hệ thống LogiClaim Auto</div>
+              <div class="timeline-title">Khởi tạo hồ sơ ${item.id}</div>
+              <div class="timeline-desc">Yêu cầu khóa đối soát công nợ liên quan</div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // Save Recovery Assignment
+    function saveRecoveryAssignment() {
+      const cause = document.getElementById('detCause').value;
+      const assignee = document.getElementById('detAssignee').value;
+
+      if(!assignee) {
+        showToast('⚠️ Vui lòng nhập đối tượng chịu truy thu!');
+        return;
+      }
+
+      selectedIncident.status = 'Đã gán truy thu';
+      selectedIncident.cause = cause;
+
+      // Add to recovery table
+      const newRcv = {
+        rcvId: `RCV-2026-00${AppData.recoveries.length + 1}`,
+        incId: selectedIncident.id,
+        target: assignee,
+        type: cause,
+        amount: selectedIncident.val,
+        method: 'Khấu trừ công nợ / Ví',
+        status: 'Chờ quyết toán',
+        date: new Date().toISOString().split('T')[0]
+      };
+
+      AppData.recoveries.push(newRcv);
+      showToast(`✅ Đã tạo phiếu truy thu ${newRcv.rcvId} cho ${assignee}`);
+      renderIncidents();
+    }
+
+    // Render Recovery Management Table
+    function renderRecoveries() {
+      const tbody = document.getElementById('recoveryTableBody');
+      tbody.innerHTML = AppData.recoveries.map(r => `
+        <tr>
+          <td><b style="font-family:'JetBrains Mono'; color:var(--primary);">${r.rcvId}</b></td>
+          <td><span class="badge badge-neutral">${r.incId}</span></td>
+          <td><b>${r.target}</b></td>
+          <td>${r.type}</td>
+          <td><b style="color:var(--danger); font-family:'JetBrains Mono';">${formatVND(r.amount)}</b></td>
+          <td>${r.method}</td>
+          <td>
+            <span class="badge ${r.status==='Đã quyết toán'?'badge-success':'badge-warning'}">${r.status}</span>
+          </td>
+          <td>${r.date}</td>
+        </tr>
+      `).join('');
+    }
+
+    // Export Excel Utility
+    function exportToExcel() {
+      const ws = XLSX.utils.json_to_sheet(AppData.recoveries);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "BangKeTruyThu");
+      XLSX.writeFile(wb, "LogiClaim_B2B_TruyThu.xlsx");
+      showToast('📥 Đã xuất file Bảng kê Truy thu thành công!');
+    }
+
+    // Format Currency Utility
+    function formatVND(amount) {
+      return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
+    }
+
+    // Toast Utility
+    function showToast(msg) {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = 'toast-msg';
+      toast.innerText = msg;
+      container.appendChild(toast);
+      setTimeout(() => toast.remove(), 3500);
+    }
+
+    // Open New Incident Modal/Form placeholder
+    function openNewIncidentForm() {
+      showToast('📝 Form báo cáo sự cố mới sẵn sàng nhập dữ liệu');
+    }
+
+    // Initialize App
+    window.onload = function() {
+      renderIncidents();
+    };
+  </script>
+</body>
+</html>
